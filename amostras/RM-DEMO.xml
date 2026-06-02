@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<revista numero="DEMO" data="02/06/2026">
+  <processo numero="927845610">
+    <despachos>
+      <despacho codigo="IPAS009" nome="Publicação de pedido de registro para oposição (exame formal concluído)"/>
+    </despachos>
+    <marca apresentacao="Mista" natureza="Produtos e/ou Serviço">
+      <nome>AURORA ATELIÊ</nome>
+    </marca>
+  </processo>
+  <processo numero="927701482">
+    <despachos>
+      <despacho codigo="IPAS024" nome="Exigência formal"/>
+    </despachos>
+    <marca apresentacao="Mista" natureza="Produtos e/ou Serviço">
+      <nome>NORTE VIVO</nome>
+    </marca>
+  </processo>
+  <processo numero="925221094">
+    <despachos>
+      <despacho codigo="IPAS098" nome="Oposição"/>
+    </despachos>
+    <marca apresentacao="Mista" natureza="Produtos e/ou Serviço">
+      <nome>CASA NORTE</nome>
+    </marca>
+  </processo>
+</revista>

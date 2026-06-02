@@ -1,0 +1,41 @@
+{
+  "exportedAt": "2026-06-02T00:00:00.000Z",
+  "note": "Carteira demonstrativa. Substitua pelos processos reais exportados pelo painel.",
+  "processes": [
+    {
+      "number": "927845610",
+      "brand": "AURORA ATELIE",
+      "classes": "25, 35",
+      "status": "Publicado na RPI",
+      "owner": "Alexandre"
+    },
+    {
+      "number": "927701482",
+      "brand": "NORTE VIVO",
+      "classes": "29, 30",
+      "status": "Com exigencia",
+      "owner": "Alexandre"
+    },
+    {
+      "number": "926941233",
+      "brand": "ORBITA DIGITAL",
+      "classes": "42",
+      "status": "Em exame",
+      "owner": "Alexandre"
+    },
+    {
+      "number": "925221094",
+      "brand": "CASA NORTE",
+      "classes": "43",
+      "status": "Com oposicao",
+      "owner": "Alexandre"
+    },
+    {
+      "number": "921884702",
+      "brand": "LUMI",
+      "classes": "3",
+      "status": "Registrado",
+      "owner": "Alexandre"
+    }
+  ]
+}

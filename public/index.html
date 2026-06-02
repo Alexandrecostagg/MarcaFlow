@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MarcaFlow | Gestão INPI</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">M</div>
+        <div>
+          <strong>MarcaFlow</strong>
+          <span>Gestão INPI</span>
+        </div>
+      </div>
+      <nav class="nav" aria-label="Navegação principal">
+        <button class="nav-item active" data-view="dashboard">
+          <span class="icon">⌂</span><span>Visão geral</span>
+        </button>
+        <button class="nav-item" data-view="processes">
+          <span class="icon">▤</span><span>Processos</span>
+        </button>
+        <button class="nav-item" data-view="clients">
+          <span class="icon">♙</span><span>Clientes</span>
+        </button>
+        <button class="nav-item" data-view="deadlines">
+          <span class="icon">◷</span><span>Agenda</span>
+        </button>
+        <button class="nav-item" data-view="documents">
+          <span class="icon">▧</span><span>Documentos</span>
+        </button>
+        <button class="nav-item" data-view="rpi">
+          <span class="icon">↻</span><span>Monitor RPI</span>
+        </button>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="rpi-status">
+          <span class="status-dot"></span>
+          <div><strong>Monitor RPI</strong><span>Importação manual ativa</span></div>
+        </div>
+        <button class="nav-item" id="export-data"><span class="icon">⇩</span><span>Exportar dados</span></button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Carteira de marcas</p>
+          <h1 id="page-title">Visão geral</h1>
+        </div>
+        <div class="topbar-actions">
+          <label class="search">
+            <span>⌕</span>
+            <input id="global-search" type="search" placeholder="Buscar marca, cliente ou processo" />
+          </label>
+          <button class="secondary-button" id="cloud-auth-button" title="Entrar para sincronizar dados"><span class="cloud-dot"></span><span id="cloud-auth-label">Modo local</span></button>
+          <button class="icon-button" id="notification-button" title="Ver alertas">♧<span id="alert-count">0</span></button>
+          <button class="primary-button" id="open-process-modal"><span>＋</span>Novo processo</button>
+        </div>
+      </header>
+
+      <section id="app-view" class="content"></section>
+    </main>
+
+    <dialog id="process-modal">
+      <form method="dialog" id="process-form" class="dialog-form">
+        <div class="dialog-header">
+          <div><p class="eyebrow">Cadastro operacional</p><h2>Novo processo</h2></div>
+          <button class="close-button" type="button" data-close="process-modal" title="Fechar">×</button>
+        </div>
+        <div class="form-grid">
+          <label><span>Marca</span><input required name="brand" placeholder="Ex.: Aurora" /></label>
+          <label><span>Cliente</span><select required name="clientId" id="process-client-select"></select></label>
+          <label><span>Número do processo</span><input name="number" placeholder="Ex.: 927845610" /></label>
+          <label><span>Classe(s)</span><input required name="classes" placeholder="Ex.: 25, 35" /></label>
+          <label><span>Apresentação</span>
+            <select name="presentation">
+              <option>Mista</option><option>Nominativa</option><option>Figurativa</option><option>Tridimensional</option>
+            </select>
+          </label>
+          <label><span>Status</span>
+            <select name="status">
+              <option>Preparação</option><option>Protocolado</option><option>Publicado na RPI</option><option>Em exame</option><option>Deferido</option><option>Registrado</option><option>Com exigência</option><option>Com oposição</option><option>Indeferido</option>
+            </select>
+          </label>
+          <label><span>Responsável</span><input name="owner" value="Alexandre" /></label>
+          <label><span>Próxima ação</span><input required name="nextAction" placeholder="Ex.: Emitir GRU" /></label>
+          <label><span>Prazo legal</span><input name="legalDeadline" type="date" /></label>
+          <label><span>Prazo interno</span><input name="internalDeadline" type="date" /></label>
+        </div>
+        <label class="full-field"><span>Observações</span><textarea name="notes" rows="3" placeholder="Riscos, pendências e contexto do caso"></textarea></label>
+        <div class="dialog-actions">
+          <button type="button" data-close="process-modal" class="secondary-button">Cancelar</button>
+          <button type="submit" value="default" class="primary-button">Salvar processo</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="client-modal">
+      <form method="dialog" id="client-form" class="dialog-form">
+        <div class="dialog-header">
+          <div><p class="eyebrow">Relacionamento</p><h2>Novo cliente</h2></div>
+          <button class="close-button" type="button" data-close="client-modal" title="Fechar">×</button>
+        </div>
+        <div class="form-grid">
+          <label><span>Nome / razão social</span><input required name="name" /></label>
+          <label><span>CPF / CNPJ</span><input required name="document" /></label>
+          <label><span>E-mail</span><input name="email" type="email" /></label>
+          <label><span>Telefone</span><input name="phone" /></label>
+          <label><span>Perfil</span><select name="profile"><option>MEI</option><option>ME</option><option>EPP</option><option>Pessoa física</option><option>Empresa</option></select></label>
+          <label><span>Responsável</span><input name="contact" /></label>
+        </div>
+        <div class="dialog-actions">
+          <button type="button" data-close="client-modal" class="secondary-button">Cancelar</button>
+          <button type="submit" value="default" class="primary-button">Salvar cliente</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="detail-modal">
+      <div id="detail-content"></div>
+    </dialog>
+
+    <dialog id="login-modal">
+      <form method="dialog" id="login-form" class="dialog-form compact-form">
+        <div class="dialog-header">
+          <div><p class="eyebrow">Sincronização segura</p><h2>Entrar no MarcaFlow</h2></div>
+          <button class="close-button" type="button" data-close="login-modal" title="Fechar">×</button>
+        </div>
+        <p class="form-intro">Use sua conta autorizada para carregar e salvar a carteira compartilhada no Firebase.</p>
+        <label><span>E-mail</span><input required name="email" type="email" autocomplete="email" /></label>
+        <label><span>Senha</span><input required name="password" type="password" autocomplete="current-password" /></label>
+        <p class="form-error" id="login-error"></p>
+        <div class="dialog-actions">
+          <button type="button" data-close="login-modal" class="secondary-button">Cancelar</button>
+          <button type="submit" class="primary-button">Entrar</button>
+        </div>
+      </form>
+    </dialog>
+
+    <input id="rpi-file-input" type="file" accept=".xml,text/xml,application/xml" hidden />
+    <script type="module" src="./firebase-service.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,7 @@
+importacoes/*
+!importacoes/.gitkeep
+relatorios/*
+!relatorios/.gitkeep
+.DS_Store
+.firebase/
+pglite-debug.log
