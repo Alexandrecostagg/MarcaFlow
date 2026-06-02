@@ -5,3 +5,4 @@ relatorios/*
 .DS_Store
 .firebase/
 pglite-debug.log
+.wrangler/

@@ -110,6 +110,18 @@ O XML e usado para triagem. A publicacao oficial deve ser conferida no PDF da RP
 - Fallback: `localStorage` no navegador quando o usuario nao estiver autenticado.
 - Versionamento: Git local.
 
+Aplicacao publicada:
+
+```text
+https://marcaflow.pages.dev
+```
+
+Console Firebase:
+
+```text
+https://console.firebase.google.com/project/marcaflow-inpi/overview
+```
+
 Antes do primeiro login, habilite `E-mail/senha` em:
 
 ```text
