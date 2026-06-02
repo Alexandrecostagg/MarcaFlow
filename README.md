@@ -33,15 +33,15 @@ Nao e necessario instalar dependencias ou iniciar servidor.
 Baixe e extraia o XML de marcas mais recente:
 
 ```bash
-cd "/Users/alexandregomesdacosta/Documents/New project"
-python3 mvp-inpi/baixar_rpi.py
+cd "/Users/alexandregomesdacosta/Documents/Projetos_DEV/MarcaFlow"
+python3 baixar_rpi.py
 ```
 
 Depois, no app:
 
 1. acesse `Monitor RPI`;
 2. clique em `Importar XML`;
-3. selecione o arquivo em `mvp-inpi/importacoes/RMxxxx.xml`;
+3. selecione o arquivo em `importacoes/RMxxxx.xml`;
 4. confira os despachos encontrados no PDF oficial da secao V de Marcas.
 
 ## Monitoramento automatico
@@ -49,23 +49,23 @@ Depois, no app:
 Na tela `Monitor RPI`, use `Exportar carteira` e substitua o arquivo:
 
 ```text
-mvp-inpi/carteira-monitorada.json
+carteira-monitorada.json
 ```
 
 Para testar a rotina completa manualmente:
 
 ```bash
-cd "/Users/alexandregomesdacosta/Documents/New project"
-./mvp-inpi/rodar_monitoramento.sh
+cd "/Users/alexandregomesdacosta/Documents/Projetos_DEV/MarcaFlow"
+./rodar_monitoramento.sh
 ```
 
-Ela baixa a RPI mais recente, cruza os processos em streaming, gera relatorios em `mvp-inpi/relatorios/` e exibe uma notificacao local no macOS.
+Ela baixa a RPI mais recente, cruza os processos em streaming, gera relatorios em `relatorios/` e exibe uma notificacao local no macOS.
 
 Para instalar o agendamento semanal nativo do macOS:
 
 ```bash
-cd "/Users/alexandregomesdacosta/Documents/New project"
-./mvp-inpi/instalar_agendamento_macos.sh
+cd "/Users/alexandregomesdacosta/Documents/Projetos_DEV/MarcaFlow"
+./instalar_agendamento_macos.sh
 ```
 
 O agendamento roda toda terca-feira as 11:00 no horario local do Mac.
@@ -73,8 +73,8 @@ O agendamento roda toda terca-feira as 11:00 no horario local do Mac.
 Para remover o agendamento:
 
 ```bash
-cd "/Users/alexandregomesdacosta/Documents/New project"
-./mvp-inpi/remover_agendamento_macos.sh
+cd "/Users/alexandregomesdacosta/Documents/Projetos_DEV/MarcaFlow"
+./remover_agendamento_macos.sh
 ```
 
 O downloader conserva somente as quatro edicoes mais recentes para evitar crescimento continuo da pasta de importacoes.
@@ -82,7 +82,7 @@ O downloader conserva somente as quatro edicoes mais recentes para evitar cresci
 Para testar sem baixar a revista completa, importe:
 
 ```text
-mvp-inpi/amostras/RM-DEMO.xml
+amostras/RM-DEMO.xml
 ```
 
 ## Dados demonstrativos
@@ -96,7 +96,7 @@ Substitua a carteira demonstrativa pela carteira real:
 1. cadastre os processos reais no painel;
 2. acesse `Monitor RPI`;
 3. clique em `Exportar carteira`;
-4. substitua `mvp-inpi/carteira-monitorada.json` pelo arquivo exportado.
+4. substitua `carteira-monitorada.json` pelo arquivo exportado.
 
 Depois disso, a rotina semanal instalada passa a acompanhar os processos reais. Uma evolucao futura sera sincronizar automaticamente o relatorio gerado pelo monitor com o painel e enviar alertas por e-mail ou WhatsApp.
 
@@ -122,7 +122,7 @@ Console Firebase:
 https://console.firebase.google.com/project/marcaflow-inpi/overview
 ```
 
-Antes do primeiro login, habilite `E-mail/senha` em:
+O provedor `E-mail/senha` ja esta habilitado em:
 
 ```text
 https://console.firebase.google.com/project/marcaflow-inpi/authentication/providers

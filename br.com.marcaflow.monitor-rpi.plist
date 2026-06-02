@@ -7,10 +7,10 @@
     <key>ProgramArguments</key>
     <array>
       <string>/bin/zsh</string>
-      <string>/Users/alexandregomesdacosta/Documents/New project/mvp-inpi/rodar_monitoramento.sh</string>
+      <string>/Users/alexandregomesdacosta/Documents/Projetos_DEV/MarcaFlow/rodar_monitoramento.sh</string>
     </array>
     <key>WorkingDirectory</key>
-    <string>/Users/alexandregomesdacosta/Documents/New project/mvp-inpi</string>
+    <string>/Users/alexandregomesdacosta/Documents/Projetos_DEV/MarcaFlow</string>
     <key>StartCalendarInterval</key>
     <dict>
       <key>Weekday</key>
@@ -21,8 +21,8 @@
       <integer>0</integer>
     </dict>
     <key>StandardOutPath</key>
-    <string>/Users/alexandregomesdacosta/Documents/New project/mvp-inpi/relatorios/monitor-rpi.log</string>
+    <string>/Users/alexandregomesdacosta/Documents/Projetos_DEV/MarcaFlow/relatorios/monitor-rpi.log</string>
     <key>StandardErrorPath</key>
-    <string>/Users/alexandregomesdacosta/Documents/New project/mvp-inpi/relatorios/monitor-rpi-error.log</string>
+    <string>/Users/alexandregomesdacosta/Documents/Projetos_DEV/MarcaFlow/relatorios/monitor-rpi-error.log</string>
   </dict>
 </plist>
