@@ -283,12 +283,12 @@ function rpi() {
   const latest = data.imports[0];
   const movements = data.movements.slice(0, 8);
   const trackedCount = data.processes.filter(item => item.number).length;
-  return `<div class="page-head"><div><h2>Monitor RPI</h2><p>Importe o XML simplificado da seção de marcas e cruze os despachos com sua carteira.</p></div><div class="page-actions"><a class="link-button" href="https://revistas.inpi.gov.br/rpi/" target="_blank" rel="noreferrer">Abrir portal RPI ↗</a><button class="secondary-button" id="export-tracked-portfolio"><span>⇩</span>Exportar carteira</button><button class="primary-button" id="select-rpi-file"><span>↥</span>Importar XML</button></div></div>
+  return `<div class="page-head"><div><h2>Monitor RPI</h2><p>Importe XML oficial ou relatório JSON gerado pelo robô semanal.</p></div><div class="page-actions"><a class="link-button" href="https://revistas.inpi.gov.br/rpi/" target="_blank" rel="noreferrer">Abrir portal RPI ↗</a><button class="secondary-button" id="export-tracked-portfolio"><span>⇩</span>Exportar carteira</button><button class="secondary-button" id="select-monitor-report"><span>↧</span>Importar relatório</button><button class="primary-button" id="select-rpi-file"><span>↥</span>Importar XML</button></div></div>
     <div class="notice">O XML facilita a triagem, mas não substitui a publicação oficial. Antes de cumprir prazo ou tomar decisão processual, confira o PDF da seção V de Marcas no portal da RPI.</div>
     <section class="rpi-grid" style="margin-top:15px">
       <div class="stack">
         <article class="panel"><div class="panel-header"><div><h3>Leitura de arquivo</h3><p>Processamento local: nenhum dado é enviado pela internet</p></div></div><div class="panel-body">
-          <div class="upload-zone"><div><div class="upload-icon">↥</div><strong>Selecione o XML de Marcas da RPI</strong><span>Use o arquivo RMxxxx.xml extraído do ZIP oficial do INPI. O sistema guarda somente os despachos vinculados aos seus processos.</span><button class="primary-button" id="upload-rpi-file">Escolher arquivo XML</button></div></div>
+          <div class="upload-zone"><div><div class="upload-icon">↥</div><strong>Selecione XML ou relatório do monitor</strong><span>Use RMxxxx.xml do INPI para triagem manual ou relatorios/monitoramento-RPI-xxxx.json gerado pelo robô semanal.</span><div class="upload-actions"><button class="secondary-button" id="upload-monitor-report">Escolher relatório JSON</button><button class="primary-button" id="upload-rpi-file">Escolher arquivo XML</button></div></div></div>
         </div></article>
         <article class="panel"><div class="panel-header"><div><h3>Movimentações encontradas</h3><p>Despachos recentes vinculados à carteira</p></div></div><div class="panel-body movement-list">${movementList(movements)}</div></article>
       </div>
@@ -379,6 +379,8 @@ function bindViewEvents() {
   document.getElementById("class-filter")?.addEventListener("change", applyProcessFilters);
   document.getElementById("select-rpi-file")?.addEventListener("click", selectRpiFile);
   document.getElementById("upload-rpi-file")?.addEventListener("click", selectRpiFile);
+  document.getElementById("select-monitor-report")?.addEventListener("click", selectMonitorReport);
+  document.getElementById("upload-monitor-report")?.addEventListener("click", selectMonitorReport);
   document.getElementById("export-tracked-portfolio")?.addEventListener("click", exportTrackedPortfolio);
   document.getElementById("export-tracked-portfolio-side")?.addEventListener("click", exportTrackedPortfolio);
   document.getElementById("agent-form")?.addEventListener("submit", handleAgentSubmit);
@@ -430,6 +432,7 @@ function showDetails(id) {
   document.getElementById("close-detail").addEventListener("click", () => closeModal("detail-modal"));
 }
 function selectRpiFile() { document.getElementById("rpi-file-input").click(); }
+function selectMonitorReport() { document.getElementById("monitor-report-input").click(); }
 function downloadJson(payload, fileName) {
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
@@ -485,6 +488,64 @@ function dispatchRule(name) {
   if (text.includes("concessão de registro")) return { status: "Registrado", stage: "Registro", action: "Baixar e arquivar certificado", tone: "green" };
   if (text.includes("deferimento do pedido")) return { status: "Deferido", stage: "Concessão", action: "Acompanhar concessão automática", tone: "green" };
   return { action: "Conferir despacho no PDF oficial", tone: "gray" };
+}
+function severityTone(severity) {
+  return ({ critico: "red", atencao: "amber", informativo: "green", revisar: "gray" })[String(severity || "").toLowerCase()] || "gray";
+}
+function movementIdFromReport(report, movement) {
+  return `${report.rpi || movement.rpi}:${movement.processNumber}:${movement.dispatchCode}`;
+}
+function importMonitorReportJson(jsonText, fileName) {
+  const report = JSON.parse(jsonText);
+  if (!Array.isArray(report.movements)) throw new Error("O JSON não parece ser um relatório do monitor RPI.");
+  const tracked = new Map(data.processes.filter(p => p.number).map(p => [p.number.replace(/\D/g, ""), p]));
+  let matches = 0;
+  let found = 0;
+  report.movements.forEach((movement) => {
+    const number = String(movement.processNumber || "").replace(/\D/g, "");
+    const process = tracked.get(number);
+    if (!process) return;
+    matches += 1;
+    const id = movementIdFromReport(report, movement);
+    process.status = movement.status || process.status;
+    process.flowStage = movement.flowStage || process.flowStage;
+    process.nextAction = movement.nextAction || process.nextAction;
+    process.lastRpi = `RPI ${report.rpi || movement.rpi || ""}`.trim();
+    process.lastDispatchCode = movement.dispatchCode || process.lastDispatchCode;
+    process.lastDispatchName = movement.dispatchName || process.lastDispatchName;
+    process.lastPublicationDate = movement.publicationDate || report.publicationDate || process.lastPublicationDate;
+    process.legalDeadline = movement.legalDeadline || process.legalDeadline;
+    process.internalDeadline = movement.internalDeadline || process.internalDeadline;
+    if (data.movements.some(item => item.id === id)) return;
+    data.movements.unshift({
+      id,
+      rpi: `RPI ${report.rpi || movement.rpi || ""}`.trim(),
+      publicationDate: movement.publicationDate || report.publicationDate,
+      importedAt: iso(),
+      processId: process.id,
+      processNumber: number,
+      brand: process.brand,
+      dispatchCode: movement.dispatchCode || "Sem código",
+      dispatchName: movement.dispatchName || "Despacho sem nome",
+      tone: severityTone(movement.severity)
+    });
+    found += 1;
+  });
+  data.imports.unshift({
+    id: crypto.randomUUID(),
+    rpi: `RPI ${report.rpi || ""}`.trim(),
+    date: report.publicationDate || iso(),
+    importedAt: iso(),
+    fileName,
+    totalProcesses: report.totalProcesses || 0,
+    matches,
+    movements: found,
+    source: "monitor-json"
+  });
+  save();
+  view = "rpi";
+  render();
+  alert(`${found} novo(s) despacho(s) importado(s) do relatório para ${matches} processo(s) da carteira.`);
 }
 function importRpiXml(xmlText, fileName) {
   const xml = new DOMParser().parseFromString(xmlText, "application/xml");
@@ -564,6 +625,13 @@ document.getElementById("rpi-file-input").addEventListener("change", async event
   if (!file) return;
   try { importRpiXml(await file.text(), file.name); }
   catch (error) { alert(`Não foi possível importar: ${error.message}`); }
+  event.target.value = "";
+});
+document.getElementById("monitor-report-input").addEventListener("change", async event => {
+  const file = event.target.files[0];
+  if (!file) return;
+  try { importMonitorReportJson(await file.text(), file.name); }
+  catch (error) { alert(`Não foi possível importar o relatório: ${error.message}`); }
   event.target.value = "";
 });
 document.getElementById("export-data").addEventListener("click", () => {

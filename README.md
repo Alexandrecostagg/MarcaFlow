@@ -25,6 +25,7 @@ Nao e necessario instalar dependencias ou iniciar servidor.
 - exportacao de backup em JSON;
 - persistencia local no navegador por `localStorage`;
 - monitor RPI com importacao do XML simplificado de marcas;
+- importacao do relatorio JSON gerado pelo robo semanal;
 - cruzamento dos despachos com os processos cadastrados;
 - exportacao da carteira monitorada com cliente, classes, prazos e historico de RPI;
 - atualizacao automatica de status, proxima acao e prazos sugeridos;
@@ -78,6 +79,13 @@ cd "/Users/alexandregomesdacosta/Documents/Projetos_DEV/MarcaFlow"
 ```
 
 Ela baixa a RPI mais recente, cruza os processos em streaming, gera relatorios em `relatorios/` e exibe uma notificacao local no macOS.
+
+Para trazer o resultado do robo para o painel:
+
+1. acesse `Monitor RPI`;
+2. clique em `Importar relatorio`;
+3. selecione `relatorios/monitoramento-RPI-xxxx.json`;
+4. confira os status, prazos e movimentacoes atualizados no painel.
 
 Para instalar o agendamento semanal nativo do macOS:
 

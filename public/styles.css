@@ -158,6 +158,8 @@ tr[data-id]:hover td { background: #fbfdfc; }
 .upload-zone span { max-width: 420px; font-size: 12px; line-height: 1.5; }
 .upload-icon { display: grid; width: 38px; height: 38px; place-items: center; border-radius: 6px; color: var(--green); background: var(--green-light); font-size: 20px; }
 .upload-zone .primary-button { margin-top: 14px; }
+.upload-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 14px; }
+.upload-actions .primary-button, .upload-actions .secondary-button { margin-top: 0; }
 .movement-list { display: grid; gap: 10px; }
 .movement { padding: 10px 11px; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
 .movement-top { display: flex; justify-content: space-between; gap: 8px; align-items: center; margin-bottom: 5px; }

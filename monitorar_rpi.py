@@ -51,19 +51,19 @@ def load_portfolio(path: Path) -> dict[str, dict]:
 def dispatch_rule(name: str) -> dict:
     text = name.casefold()
     if "publicação de pedido" in text and "oposição" in text:
-        return {"severity": "atencao", "action": "Monitorar prazo de oposicao", "legal_days": 60, "internal_days": 55}
+        return {"severity": "atencao", "status": "Publicado na RPI", "flow_stage": "Publicação", "action": "Monitorar prazo de oposicao", "legal_days": 60, "internal_days": 55}
     if "oposição" in text:
-        return {"severity": "critico", "action": "Preparar manifestacao a oposicao", "legal_days": 60, "internal_days": 55}
+        return {"severity": "critico", "status": "Com oposição", "flow_stage": "Oposição", "action": "Preparar manifestacao a oposicao", "legal_days": 60, "internal_days": 55}
     if "exigência formal" in text:
-        return {"severity": "critico", "action": "Responder exigencia formal", "legal_days": 5, "internal_days": 4}
+        return {"severity": "critico", "status": "Com exigência", "flow_stage": "Exame", "action": "Responder exigencia formal", "legal_days": 5, "internal_days": 4}
     if "exigência" in text:
-        return {"severity": "atencao", "action": "Responder exigencia", "legal_days": 60, "internal_days": 55}
+        return {"severity": "atencao", "status": "Com exigência", "flow_stage": "Exame", "action": "Responder exigencia", "legal_days": 60, "internal_days": 55}
     if "indeferimento" in text:
-        return {"severity": "critico", "action": "Avaliar recurso contra indeferimento", "legal_days": 60, "internal_days": 55}
+        return {"severity": "critico", "status": "Indeferido", "flow_stage": "Recurso", "action": "Avaliar recurso contra indeferimento", "legal_days": 60, "internal_days": 55}
     if "concessão de registro" in text:
-        return {"severity": "informativo", "action": "Baixar e arquivar certificado"}
+        return {"severity": "informativo", "status": "Registrado", "flow_stage": "Registro", "action": "Baixar e arquivar certificado"}
     if "deferimento do pedido" in text:
-        return {"severity": "informativo", "action": "Acompanhar concessao automatica"}
+        return {"severity": "informativo", "status": "Deferido", "flow_stage": "Concessão", "action": "Acompanhar concessao automatica"}
     return {"severity": "revisar", "action": "Conferir despacho no PDF oficial"}
 
 
@@ -109,6 +109,8 @@ def parse_rpi(xml_path: Path, portfolio: dict[str, dict]) -> dict:
                     "dispatchCode": dispatch.attrib.get("codigo", "Sem codigo"),
                     "dispatchName": name,
                     "severity": rule["severity"],
+                    "status": rule.get("status", tracked.get("status", "")),
+                    "flowStage": rule.get("flow_stage", tracked.get("flowStage", "")),
                     "nextAction": rule["action"],
                     "legalDeadline": "",
                     "internalDeadline": "",
