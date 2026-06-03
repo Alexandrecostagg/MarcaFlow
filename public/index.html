@@ -75,6 +75,12 @@
           <label><span>Cliente</span><select required name="clientId" id="process-client-select"></select></label>
           <label><span>Número do processo</span><input name="number" placeholder="Ex.: 927845610" /></label>
           <label><span>Classe(s)</span><input required name="classes" placeholder="Ex.: 25, 35" /></label>
+          <label><span>Etapa do fluxo</span>
+            <select name="flowStage">
+              <option>Busca prévia</option><option>Depósito</option><option>Publicação</option><option>Exame</option><option>Oposição</option><option>Recurso</option><option>Concessão</option><option>Registro</option><option>Renovação</option>
+            </select>
+          </label>
+          <label><span>Data de depósito</span><input name="filingDate" type="date" /></label>
           <label><span>Apresentação</span>
             <select name="presentation">
               <option>Mista</option><option>Nominativa</option><option>Figurativa</option><option>Tridimensional</option>
@@ -87,6 +93,8 @@
           </label>
           <label><span>Responsável</span><input name="owner" value="Alexandre" /></label>
           <label><span>Próxima ação</span><input required name="nextAction" placeholder="Ex.: Emitir GRU" /></label>
+          <label><span>Última RPI</span><input name="lastRpi" placeholder="Ex.: RPI 2891" /></label>
+          <label><span>Código do despacho</span><input name="lastDispatchCode" placeholder="Ex.: 003" /></label>
           <label><span>Prazo legal</span><input name="legalDeadline" type="date" /></label>
           <label><span>Prazo interno</span><input name="internalDeadline" type="date" /></label>
         </div>

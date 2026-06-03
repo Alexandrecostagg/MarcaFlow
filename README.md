@@ -16,15 +16,16 @@ Nao e necessario instalar dependencias ou iniciar servidor.
 
 - dashboard com metricas e alertas;
 - carteira de processos com busca e filtros;
-- cadastro de processos;
+- cadastro de processos com etapa do fluxo, data de deposito, ultima RPI e despacho;
 - cadastro de clientes;
 - agenda de prazos internos e legais;
 - central de documentos;
 - visualizacao dos detalhes de cada processo;
 - exportacao de backup em JSON;
-- persistencia local no navegador por `localStorage`.
+- persistencia local no navegador por `localStorage`;
 - monitor RPI com importacao do XML simplificado de marcas;
 - cruzamento dos despachos com os processos cadastrados;
+- exportacao da carteira monitorada com cliente, classes, prazos e historico de RPI;
 - atualizacao automatica de status, proxima acao e prazos sugeridos;
 - historico de importacoes e movimentacoes encontradas.
 
@@ -51,6 +52,8 @@ Na tela `Monitor RPI`, use `Exportar carteira` e substitua o arquivo:
 ```text
 carteira-monitorada.json
 ```
+
+O arquivo exportado ja sai no formato esperado pela rotina automatica, incluindo cliente, etapa do fluxo, classes, prazos e ultimo despacho conhecido.
 
 Para testar a rotina completa manualmente:
 

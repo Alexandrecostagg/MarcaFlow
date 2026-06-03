@@ -5,37 +5,70 @@
     {
       "number": "927845610",
       "brand": "AURORA ATELIE",
+      "client": "Atelie Aurora Ltda.",
       "classes": "25, 35",
+      "classList": ["25", "35"],
+      "presentation": "Mista",
+      "flowStage": "Publicacao",
       "status": "Publicado na RPI",
-      "owner": "Alexandre"
+      "owner": "Alexandre",
+      "nextAction": "Monitorar prazo de oposicao",
+      "lastRpi": "RPI 2891",
+      "lastDispatchCode": "003"
     },
     {
       "number": "927701482",
       "brand": "NORTE VIVO",
+      "client": "Norte Vivo Alimentos",
       "classes": "29, 30",
+      "classList": ["29", "30"],
+      "presentation": "Mista",
+      "flowStage": "Exame",
       "status": "Com exigencia",
-      "owner": "Alexandre"
+      "owner": "Alexandre",
+      "nextAction": "Responder exigencia formal",
+      "lastRpi": "RPI 2891",
+      "lastDispatchCode": "340"
     },
     {
       "number": "926941233",
       "brand": "ORBITA DIGITAL",
+      "client": "Lucas Freire",
       "classes": "42",
+      "classList": ["42"],
+      "presentation": "Nominativa",
+      "flowStage": "Exame",
       "status": "Em exame",
-      "owner": "Alexandre"
+      "owner": "Alexandre",
+      "nextAction": "Aguardar exame de merito"
     },
     {
       "number": "925221094",
       "brand": "CASA NORTE",
+      "client": "Norte Vivo Alimentos",
       "classes": "43",
+      "classList": ["43"],
+      "presentation": "Mista",
+      "flowStage": "Oposicao",
       "status": "Com oposicao",
-      "owner": "Alexandre"
+      "owner": "Alexandre",
+      "nextAction": "Preparar manifestacao a oposicao",
+      "lastRpi": "RPI 2889",
+      "lastDispatchCode": "332"
     },
     {
       "number": "921884702",
       "brand": "LUMI",
+      "client": "Atelie Aurora Ltda.",
       "classes": "3",
+      "classList": ["3"],
+      "presentation": "Nominativa",
+      "flowStage": "Registro",
       "status": "Registrado",
-      "owner": "Alexandre"
+      "owner": "Alexandre",
+      "nextAction": "Monitorar renovacao",
+      "lastRpi": "RPI 2780",
+      "lastDispatchCode": "400"
     }
   ]
 }

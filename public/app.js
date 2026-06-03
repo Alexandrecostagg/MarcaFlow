@@ -15,12 +15,12 @@ const seed = {
     { id: "c4", name: "Verde Rota Turismo", document: "37.530.821/0001-44", email: "contato@verderota.com", phone: "(91) 98402-2201", profile: "MEI", contact: "Isabela Mendes" }
   ],
   processes: [
-    { id: "p1", brand: "AURORA ATELIÊ", clientId: "c1", number: "927845610", classes: "25, 35", presentation: "Mista", status: "Publicado na RPI", owner: "Alexandre", nextAction: "Monitorar prazo de oposição", legalDeadline: iso(8), internalDeadline: iso(4), notes: "Pedido publicado. Verificar semanalmente eventual oposição de terceiros." },
-    { id: "p2", brand: "NORTE VIVO", clientId: "c2", number: "927701482", classes: "29, 30", presentation: "Mista", status: "Com exigência", owner: "Alexandre", nextAction: "Responder exigência formal", legalDeadline: iso(3), internalDeadline: iso(1), notes: "Prazo curto. Conferir especificação dos produtos antes do envio." },
-    { id: "p3", brand: "ÓRBITA DIGITAL", clientId: "c3", number: "926941233", classes: "42", presentation: "Nominativa", status: "Em exame", owner: "Alexandre", nextAction: "Aguardar exame de mérito", legalDeadline: "", internalDeadline: "", notes: "Sem pendências abertas." },
-    { id: "p4", brand: "VERDE ROTA", clientId: "c4", number: "", classes: "39", presentation: "Mista", status: "Preparação", owner: "Alexandre", nextAction: "Concluir busca de anterioridade", legalDeadline: iso(12), internalDeadline: iso(9), notes: "Avaliar variações fonéticas e pesquisar radical ROTA na classe 39." },
-    { id: "p5", brand: "CASA NORTE", clientId: "c2", number: "925221094", classes: "43", presentation: "Mista", status: "Com oposição", owner: "Alexandre", nextAction: "Preparar manifestação à oposição", legalDeadline: iso(18), internalDeadline: iso(12), notes: "Caso técnico. Separar documentos de uso anterior e avaliar colidência visual." },
-    { id: "p6", brand: "LUMI", clientId: "c1", number: "921884702", classes: "3", presentation: "Nominativa", status: "Registrado", owner: "Alexandre", nextAction: "Monitorar renovação", legalDeadline: "2034-04-18", internalDeadline: "2033-10-18", notes: "Certificado arquivado. Criar alerta antecipado de renovação." }
+    { id: "p1", brand: "AURORA ATELIÊ", clientId: "c1", number: "927845610", classes: "25, 35", flowStage: "Publicação", filingDate: iso(-38), presentation: "Mista", status: "Publicado na RPI", owner: "Alexandre", nextAction: "Monitorar prazo de oposição", lastRpi: "RPI 2891", lastDispatchCode: "003", legalDeadline: iso(8), internalDeadline: iso(4), notes: "Pedido publicado. Verificar semanalmente eventual oposição de terceiros." },
+    { id: "p2", brand: "NORTE VIVO", clientId: "c2", number: "927701482", classes: "29, 30", flowStage: "Exame", filingDate: iso(-96), presentation: "Mista", status: "Com exigência", owner: "Alexandre", nextAction: "Responder exigência formal", lastRpi: "RPI 2891", lastDispatchCode: "340", legalDeadline: iso(3), internalDeadline: iso(1), notes: "Prazo curto. Conferir especificação dos produtos antes do envio." },
+    { id: "p3", brand: "ÓRBITA DIGITAL", clientId: "c3", number: "926941233", classes: "42", flowStage: "Exame", filingDate: iso(-160), presentation: "Nominativa", status: "Em exame", owner: "Alexandre", nextAction: "Aguardar exame de mérito", lastRpi: "", lastDispatchCode: "", legalDeadline: "", internalDeadline: "", notes: "Sem pendências abertas." },
+    { id: "p4", brand: "VERDE ROTA", clientId: "c4", number: "", classes: "39", flowStage: "Busca prévia", filingDate: "", presentation: "Mista", status: "Preparação", owner: "Alexandre", nextAction: "Concluir busca de anterioridade", lastRpi: "", lastDispatchCode: "", legalDeadline: iso(12), internalDeadline: iso(9), notes: "Avaliar variações fonéticas e pesquisar radical ROTA na classe 39." },
+    { id: "p5", brand: "CASA NORTE", clientId: "c2", number: "925221094", classes: "43", flowStage: "Oposição", filingDate: iso(-260), presentation: "Mista", status: "Com oposição", owner: "Alexandre", nextAction: "Preparar manifestação à oposição", lastRpi: "RPI 2889", lastDispatchCode: "332", legalDeadline: iso(18), internalDeadline: iso(12), notes: "Caso técnico. Separar documentos de uso anterior e avaliar colidência visual." },
+    { id: "p6", brand: "LUMI", clientId: "c1", number: "921884702", classes: "3", flowStage: "Registro", filingDate: "2023-04-18", presentation: "Nominativa", status: "Registrado", owner: "Alexandre", nextAction: "Monitorar renovação", lastRpi: "RPI 2780", lastDispatchCode: "400", legalDeadline: "2034-04-18", internalDeadline: "2033-10-18", notes: "Certificado arquivado. Criar alerta antecipado de renovação." }
   ],
   documents: [
     { id: "d1", processId: "p1", type: "Protocolo", name: "protocolo-927845610.pdf", date: iso(-22) },
@@ -30,6 +30,18 @@ const seed = {
   ],
   movements: [],
   imports: []
+};
+
+const flowStageByStatus = {
+  Preparação: "Busca prévia",
+  Protocolado: "Depósito",
+  "Publicado na RPI": "Publicação",
+  "Em exame": "Exame",
+  Deferido: "Concessão",
+  Registrado: "Registro",
+  "Com exigência": "Exame",
+  "Com oposição": "Oposição",
+  Indeferido: "Recurso"
 };
 
 let data = load();
@@ -52,6 +64,14 @@ function save() {
 function ensureCollections() {
   data.movements ||= [];
   data.imports ||= [];
+  data.processes.forEach((item) => {
+    item.flowStage ||= flowStageByStatus[item.status] || "Exame";
+    item.filingDate ||= "";
+    item.lastRpi ||= "";
+    item.lastDispatchCode ||= "";
+    item.lastDispatchName ||= "";
+    item.lastPublicationDate ||= "";
+  });
 }
 function client(id) { return data.clients.find((item) => item.id === id) || { name: "Cliente não informado" }; }
 function processById(id) { return data.processes.find((item) => item.id === id); }
@@ -75,7 +95,7 @@ function statusTone(status) {
 function filterProcesses(items = data.processes) {
   const term = query.trim().toLowerCase();
   if (!term) return items;
-  return items.filter((item) => [item.brand, item.number, item.status, item.classes, client(item.clientId).name].join(" ").toLowerCase().includes(term));
+  return items.filter((item) => [item.brand, item.number, item.status, item.flowStage, item.classes, item.lastRpi, item.lastDispatchCode, client(item.clientId).name].join(" ").toLowerCase().includes(term));
 }
 function urgentProcesses() {
   return data.processes.filter((item) => daysUntil(item.internalDeadline) <= 7).sort((a, b) => daysUntil(a.internalDeadline) - daysUntil(b.internalDeadline));
@@ -117,7 +137,7 @@ function metric(label, value, note, icon) {
   return `<article class="metric"><div class="metric-top"><span>${label}</span><span class="metric-icon">${icon}</span></div><strong>${value}</strong><small>${note}</small></article>`;
 }
 function processRows(items) {
-  if (!items.length) return `<tr><td colspan="6" class="empty">Nenhum processo encontrado.</td></tr>`;
+  if (!items.length) return `<tr><td colspan="7" class="empty">Nenhum processo encontrado.</td></tr>`;
   return items.map((item) => {
     const deadlineDays = daysUntil(item.internalDeadline);
     const deadlineClass = deadlineDays < 0 ? "deadline overdue" : "deadline";
@@ -126,6 +146,7 @@ function processRows(items) {
       <td><span class="brand-name">${item.brand}</span><br><span class="subtle">${client(item.clientId).name}</span></td>
       <td>${item.number || '<span class="subtle">Pré-depósito</span>'}</td>
       <td>${item.classes}</td>
+      <td>${item.flowStage}</td>
       <td><span class="badge ${statusTone(item.status)}">${item.status}</span></td>
       <td>${item.nextAction}</td>
       <td class="${item.internalDeadline ? deadlineClass : ""}">${deadline}</td>
@@ -133,7 +154,7 @@ function processRows(items) {
   }).join("");
 }
 function processTable(items) {
-  return `<div class="table-wrap"><table><thead><tr><th>Marca / cliente</th><th>Processo</th><th>Classe</th><th>Status</th><th>Próxima ação</th><th>Prazo interno</th></tr></thead><tbody>${processRows(items)}</tbody></table></div>`;
+  return `<div class="table-wrap"><table><thead><tr><th>Marca / cliente</th><th>Processo</th><th>Classe</th><th>Etapa</th><th>Status</th><th>Próxima ação</th><th>Prazo interno</th></tr></thead><tbody>${processRows(items)}</tbody></table></div>`;
 }
 
 function dashboard() {
@@ -176,7 +197,7 @@ function alertList() {
 function processes() {
   return `<div class="page-head"><div><h2>Processos de marcas</h2><p>Gerencie depósitos, publicações, exigências, oposições e registros.</p></div><button class="primary-button" id="page-new-process"><span>＋</span>Novo processo</button></div>
     <article class="panel">
-      <div class="filters"><div class="filter-row"><select id="status-filter"><option value="">Todos os status</option>${[...new Set(data.processes.map(p => p.status))].map(s => `<option>${s}</option>`).join("")}</select><select id="class-filter"><option value="">Todas as classes</option>${[...new Set(data.processes.flatMap(p => p.classes.split(",").map(c => c.trim())))].sort((a,b) => Number(a)-Number(b)).map(c => `<option>${c}</option>`).join("")}</select></div><span class="subtle">${filterProcesses().length} resultados</span></div>
+      <div class="filters"><div class="filter-row"><select id="status-filter"><option value="">Todos os status</option>${[...new Set(data.processes.map(p => p.status))].map(s => `<option>${s}</option>`).join("")}</select><select id="stage-filter"><option value="">Todas as etapas</option>${[...new Set(data.processes.map(p => p.flowStage))].map(s => `<option>${s}</option>`).join("")}</select><select id="class-filter"><option value="">Todas as classes</option>${[...new Set(data.processes.flatMap(p => p.classes.split(",").map(c => c.trim())))].sort((a,b) => Number(a)-Number(b)).map(c => `<option>${c}</option>`).join("")}</select></div><span class="subtle">${filterProcesses().length} resultados</span></div>
       <div id="process-table">${processTable(filterProcesses())}</div>
     </article>`;
 }
@@ -202,6 +223,7 @@ function documents() {
 function rpi() {
   const latest = data.imports[0];
   const movements = data.movements.slice(0, 8);
+  const trackedCount = data.processes.filter(item => item.number).length;
   return `<div class="page-head"><div><h2>Monitor RPI</h2><p>Importe o XML simplificado da seção de marcas e cruze os despachos com sua carteira.</p></div><div class="page-actions"><a class="link-button" href="https://revistas.inpi.gov.br/rpi/" target="_blank" rel="noreferrer">Abrir portal RPI ↗</a><button class="secondary-button" id="export-tracked-portfolio"><span>⇩</span>Exportar carteira</button><button class="primary-button" id="select-rpi-file"><span>↥</span>Importar XML</button></div></div>
     <div class="notice">O XML facilita a triagem, mas não substitui a publicação oficial. Antes de cumprir prazo ou tomar decisão processual, confira o PDF da seção V de Marcas no portal da RPI.</div>
     <section class="rpi-grid" style="margin-top:15px">
@@ -212,6 +234,7 @@ function rpi() {
         <article class="panel"><div class="panel-header"><div><h3>Movimentações encontradas</h3><p>Despachos recentes vinculados à carteira</p></div></div><div class="panel-body movement-list">${movementList(movements)}</div></article>
       </div>
       <div class="stack">
+        <article class="panel"><div class="panel-header"><div><h3>Carteira do robô</h3><p>${trackedCount} processo(s) numerado(s) prontos para monitoramento</p></div></div><div class="panel-body"><div class="notice quiet">A exportação gera o arquivo carteira-monitorada.json com titular, etapa, classes, prazos e último despacho. Use esse arquivo para alimentar a rotina semanal instalada no macOS.</div><button class="secondary-button full-width" id="export-tracked-portfolio-side"><span>⇩</span>Exportar carteira monitorada</button></div></article>
         <article class="panel"><div class="panel-header"><div><h3>Última importação</h3><p>${latest ? `${latest.rpi} · ${formatDate(latest.date)}` : "Nenhum XML processado"}</p></div></div><div class="panel-body">${latest ? `<div class="import-summary"><div><strong>${latest.totalProcesses}</strong><span>Processos no XML</span></div><div><strong>${latest.matches}</strong><span>Na carteira</span></div><div><strong>${latest.movements}</strong><span>Despachos</span></div></div><span class="subtle">${latest.fileName}</span>` : '<div class="empty">Importe um XML para iniciar o monitoramento.</div>'}</div></article>
         <article class="panel"><div class="panel-header"><div><h3>Fluxo recomendado</h3><p>Rotina semanal de conferência</p></div></div><div class="panel-body timeline">
           <div class="timeline-item"><div class="timeline-date">1</div><div><strong>Baixar a seção V</strong><span>Obtenha XML e PDF no portal oficial da RPI.</span></div></div>
@@ -239,15 +262,18 @@ function bindViewEvents() {
   document.getElementById("page-new-process")?.addEventListener("click", showProcessForm);
   document.getElementById("page-new-client")?.addEventListener("click", () => openModal("client-modal"));
   document.getElementById("status-filter")?.addEventListener("change", applyProcessFilters);
+  document.getElementById("stage-filter")?.addEventListener("change", applyProcessFilters);
   document.getElementById("class-filter")?.addEventListener("change", applyProcessFilters);
   document.getElementById("select-rpi-file")?.addEventListener("click", selectRpiFile);
   document.getElementById("upload-rpi-file")?.addEventListener("click", selectRpiFile);
   document.getElementById("export-tracked-portfolio")?.addEventListener("click", exportTrackedPortfolio);
+  document.getElementById("export-tracked-portfolio-side")?.addEventListener("click", exportTrackedPortfolio);
 }
 function applyProcessFilters() {
   const status = document.getElementById("status-filter").value;
+  const stage = document.getElementById("stage-filter").value;
   const className = document.getElementById("class-filter").value;
-  const items = filterProcesses().filter(p => (!status || p.status === status) && (!className || p.classes.split(",").map(c => c.trim()).includes(className)));
+  const items = filterProcesses().filter(p => (!status || p.status === status) && (!stage || p.flowStage === stage) && (!className || p.classes.split(",").map(c => c.trim()).includes(className)));
   document.getElementById("process-table").innerHTML = processTable(items);
   document.querySelectorAll(".process-row").forEach(row => row.addEventListener("click", () => showDetails(row.dataset.id)));
 }
@@ -264,7 +290,11 @@ function showDetails(id) {
     <div class="detail-grid">
       <div class="detail-item"><span>Cliente</span><strong>${client(item.clientId).name}</strong></div>
       <div class="detail-item"><span>Classe(s)</span><strong>${item.classes}</strong></div>
+      <div class="detail-item"><span>Etapa</span><strong>${item.flowStage}</strong></div>
       <div class="detail-item"><span>Apresentação</span><strong>${item.presentation}</strong></div>
+      <div class="detail-item"><span>Data de depósito</span><strong>${formatDate(item.filingDate)}</strong></div>
+      <div class="detail-item"><span>Última RPI</span><strong>${item.lastRpi || "Sem RPI vinculada"}</strong></div>
+      <div class="detail-item"><span>Último despacho</span><strong>${item.lastDispatchCode || "Sem despacho"}</strong></div>
       <div class="detail-item"><span>Próxima ação</span><strong>${item.nextAction}</strong></div>
       <div class="detail-item"><span>Prazo legal</span><strong>${formatDate(item.legalDeadline)}</strong></div>
       <div class="detail-item"><span>Prazo interno</span><strong>${formatDate(item.internalDeadline)}</strong></div>
@@ -283,16 +313,32 @@ function downloadJson(payload, fileName) {
   link.click();
   URL.revokeObjectURL(url);
 }
+function parseClasses(value) {
+  return String(value || "").split(",").map(item => item.trim()).filter(Boolean);
+}
 function exportTrackedPortfolio() {
   const processes = data.processes.filter(item => item.number).map(item => ({
     number: item.number.replace(/\D/g, ""),
     brand: item.brand,
+    client: client(item.clientId).name,
+    clientDocument: client(item.clientId).document || "",
     classes: item.classes,
+    classList: parseClasses(item.classes),
+    presentation: item.presentation,
+    flowStage: item.flowStage,
     status: item.status,
     owner: item.owner,
-    nextAction: item.nextAction
+    nextAction: item.nextAction,
+    filingDate: item.filingDate,
+    legalDeadline: item.legalDeadline,
+    internalDeadline: item.internalDeadline,
+    lastRpi: item.lastRpi,
+    lastDispatchCode: item.lastDispatchCode,
+    lastDispatchName: item.lastDispatchName,
+    lastPublicationDate: item.lastPublicationDate,
+    notes: item.notes
   }));
-  downloadJson({ exportedAt: new Date().toISOString(), processes }, "carteira-monitorada.json");
+  downloadJson({ exportedAt: new Date().toISOString(), source: "MarcaFlow", processes }, "carteira-monitorada.json");
 }
 function brToIso(value) {
   if (!value) return iso();
@@ -307,13 +353,13 @@ function addDays(value, amount) {
 }
 function dispatchRule(name) {
   const text = name.toLowerCase();
-  if (text.includes("publicação de pedido") && text.includes("oposição")) return { status: "Publicado na RPI", action: "Monitorar prazo de oposição", legalDays: 60, internalDays: 55, tone: "blue" };
-  if (text.includes("oposição")) return { status: "Com oposição", action: "Preparar manifestação à oposição", legalDays: 60, internalDays: 55, tone: "red" };
-  if (text.includes("exigência formal")) return { status: "Com exigência", action: "Responder exigência formal", legalDays: 5, internalDays: 4, tone: "red" };
-  if (text.includes("exigência")) return { status: "Com exigência", action: "Responder exigência", legalDays: 60, internalDays: 55, tone: "amber" };
-  if (text.includes("indeferimento")) return { status: "Indeferido", action: "Avaliar recurso contra indeferimento", legalDays: 60, internalDays: 55, tone: "red" };
-  if (text.includes("concessão de registro")) return { status: "Registrado", action: "Baixar e arquivar certificado", tone: "green" };
-  if (text.includes("deferimento do pedido")) return { status: "Deferido", action: "Acompanhar concessão automática", tone: "green" };
+  if (text.includes("publicação de pedido") && text.includes("oposição")) return { status: "Publicado na RPI", stage: "Publicação", action: "Monitorar prazo de oposição", legalDays: 60, internalDays: 55, tone: "blue" };
+  if (text.includes("oposição")) return { status: "Com oposição", stage: "Oposição", action: "Preparar manifestação à oposição", legalDays: 60, internalDays: 55, tone: "red" };
+  if (text.includes("exigência formal")) return { status: "Com exigência", stage: "Exame", action: "Responder exigência formal", legalDays: 5, internalDays: 4, tone: "red" };
+  if (text.includes("exigência")) return { status: "Com exigência", stage: "Exame", action: "Responder exigência", legalDays: 60, internalDays: 55, tone: "amber" };
+  if (text.includes("indeferimento")) return { status: "Indeferido", stage: "Recurso", action: "Avaliar recurso contra indeferimento", legalDays: 60, internalDays: 55, tone: "red" };
+  if (text.includes("concessão de registro")) return { status: "Registrado", stage: "Registro", action: "Baixar e arquivar certificado", tone: "green" };
+  if (text.includes("deferimento do pedido")) return { status: "Deferido", stage: "Concessão", action: "Acompanhar concessão automática", tone: "green" };
   return { action: "Conferir despacho no PDF oficial", tone: "gray" };
 }
 function importRpiXml(xmlText, fileName) {
@@ -338,7 +384,12 @@ function importRpiXml(xmlText, fileName) {
       if (data.movements.some(item => item.id === movementId)) return;
       const rule = dispatchRule(dispatchName);
       process.status = rule.status || process.status;
+      process.flowStage = rule.stage || process.flowStage;
       process.nextAction = rule.action;
+      process.lastRpi = `RPI ${rpiNumber}`;
+      process.lastDispatchCode = dispatchCode;
+      process.lastDispatchName = dispatchName;
+      process.lastPublicationDate = publicationDate;
       if (rule.legalDays) process.legalDeadline = addDays(publicationDate, rule.legalDays);
       if (rule.internalDays) process.internalDeadline = addDays(publicationDate, rule.internalDays);
       data.movements.unshift({ id: movementId, rpi: `RPI ${rpiNumber}`, publicationDate, importedAt: iso(), processId: process.id, processNumber: number, brand: process.brand, dispatchCode, dispatchName, tone: rule.tone });
@@ -397,6 +448,9 @@ document.getElementById("export-data").addEventListener("click", () => {
 document.getElementById("process-form").addEventListener("submit", event => {
   event.preventDefault();
   const values = Object.fromEntries(new FormData(event.currentTarget));
+  values.flowStage ||= flowStageByStatus[values.status] || "Busca prévia";
+  values.lastDispatchName = "";
+  values.lastPublicationDate = "";
   data.processes.unshift({ id: crypto.randomUUID(), ...values });
   save();
   event.currentTarget.reset();

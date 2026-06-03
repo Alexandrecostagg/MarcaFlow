@@ -116,6 +116,8 @@ tr[data-id]:hover td { background: #fbfdfc; }
 .client-card-footer { display: flex; justify-content: space-between; padding-top: 11px; margin-top: 12px; border-top: 1px solid var(--line); color: var(--muted); font-size: 11px; }
 .rpi-grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(290px, .85fr); gap: 15px; }
 .notice { padding: 11px 13px; border-left: 3px solid var(--amber); color: #684919; background: var(--amber-light); font-size: 12px; line-height: 1.5; }
+.notice.quiet { border-color: var(--green); color: #355249; background: var(--green-light); }
+.full-width { width: 100%; margin-top: 12px; }
 .upload-zone { display: grid; place-items: center; min-height: 188px; padding: 24px; border: 1px dashed #9dbab2; border-radius: 7px; color: var(--muted); background: #fbfdfc; text-align: center; }
 .upload-zone strong, .upload-zone span { display: block; }
 .upload-zone strong { margin: 9px 0 4px; color: var(--text); font-size: 14px; }
@@ -176,5 +178,5 @@ label input:focus, label select:focus, label textarea:focus { border-color: #73a
   .client-grid { grid-template-columns: 1fr; }
   .form-grid, .detail-grid { grid-template-columns: 1fr; }
   .table-wrap { overflow-x: auto; }
-  table { min-width: 720px; }
+  table { min-width: 820px; }
 }
