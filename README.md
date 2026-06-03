@@ -16,9 +16,10 @@ Nao e necessario instalar dependencias ou iniciar servidor.
 
 - dashboard com metricas e alertas;
 - carteira de processos com busca e filtros;
+- funil operacional por etapa do pedido;
 - cadastro de processos com etapa do fluxo, data de deposito, ultima RPI e despacho;
 - cadastro de clientes;
-- agenda de prazos internos e legais;
+- agenda de prazos internos e legais com alertas visuais;
 - central de documentos;
 - visualizacao dos detalhes de cada processo;
 - exportacao de backup em JSON;
@@ -28,6 +29,20 @@ Nao e necessario instalar dependencias ou iniciar servidor.
 - exportacao da carteira monitorada com cliente, classes, prazos e historico de RPI;
 - atualizacao automatica de status, proxima acao e prazos sugeridos;
 - historico de importacoes e movimentacoes encontradas.
+- agente INPI local com recuperacao de trechos do Guia Basico, Guia do Pedido de Marca e Manual de Marcas.
+
+## Agente INPI e RAG local
+
+A tela `Agente INPI` usa uma base local em `public/knowledge-base.js`. Ela recupera trechos por relevancia, mostra as fontes usadas e gera uma resposta operacional com checklist.
+
+Fontes iniciais:
+
+- Guia Basico de Marca do INPI;
+- Guia Basico do Pedido de Marca do INPI;
+- Manual de Marcas do INPI;
+- regras operacionais do proprio MarcaFlow.
+
+Essa primeira versao nao envia perguntas para modelo externo e nao substitui conferencia juridica. A evolucao natural e criar um backend seguro para usar embeddings, OpenAI API e documentos completos sem expor chaves no navegador.
 
 ## Monitor semanal da RPI
 

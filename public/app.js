@@ -43,6 +43,14 @@ const flowStageByStatus = {
   "Com oposição": "Oposição",
   Indeferido: "Recurso"
 };
+const funnelStages = ["Busca prévia", "Depósito", "Publicação", "Exame", "Oposição", "Recurso", "Concessão", "Registro", "Renovação"];
+const riskLabels = {
+  overdue: "Vencido",
+  today: "Hoje",
+  critical: "Crítico",
+  warning: "Atenção",
+  ok: "Em dia"
+};
 
 let data = load();
 let view = "dashboard";
@@ -99,6 +107,24 @@ function filterProcesses(items = data.processes) {
 }
 function urgentProcesses() {
   return data.processes.filter((item) => daysUntil(item.internalDeadline) <= 7).sort((a, b) => daysUntil(a.internalDeadline) - daysUntil(b.internalDeadline));
+}
+function processRisk(item) {
+  const days = daysUntil(item.internalDeadline);
+  if (days < 0) return "overdue";
+  if (days === 0) return "today";
+  if (days <= 2) return "critical";
+  if (days <= 7) return "warning";
+  return "ok";
+}
+function legalRisk(item) {
+  const days = daysUntil(item.legalDeadline);
+  if (days < 0) return "overdue";
+  if (days <= 2) return "critical";
+  if (days <= 7) return "warning";
+  return "ok";
+}
+function riskTone(risk) {
+  return ({ overdue: "red", today: "red", critical: "red", warning: "amber", ok: "green" })[risk] || "gray";
 }
 function openModal(id) { document.getElementById(id).showModal(); }
 function closeModal(id) { document.getElementById(id).close(); }
@@ -162,11 +188,13 @@ function dashboard() {
   const alerts = urgentProcesses();
   const registered = data.processes.filter((p) => p.status === "Registrado").length;
   const statusCounts = Object.entries(data.processes.reduce((acc, p) => ({ ...acc, [p.status]: (acc[p.status] || 0) + 1 }), {}));
+  const legalAlerts = data.processes.filter((item) => ["overdue", "critical", "warning"].includes(legalRisk(item))).length;
   return `
     <div class="page-head"><div><h2>Operação em um só lugar</h2><p>Acompanhe os pedidos, organize prazos e mantenha a carteira sob controle.</p></div><span class="subtle">Atualizado em ${formatDate(iso())}</span></div>
     <section class="metric-grid">
       ${metric("Processos ativos", active, `${data.processes.length} processos na carteira`, "▤")}
       ${metric("Prazos próximos", alerts.length, "Até 7 dias ou vencidos", "◷")}
+      ${metric("Risco legal", legalAlerts, "Prazos legais em alerta", "!")}
       ${metric("Clientes", data.clients.length, "Titulares cadastrados", "♙")}
       ${metric("Marcas registradas", registered, "Certificados arquivados", "✓")}
     </section>
@@ -201,6 +229,23 @@ function processes() {
       <div id="process-table">${processTable(filterProcesses())}</div>
     </article>`;
 }
+function funnel() {
+  const columns = funnelStages.map((stage) => {
+    const items = filterProcesses(data.processes.filter((item) => item.flowStage === stage));
+    const cards = items.map((item) => {
+      const risk = processRisk(item);
+      return `<button class="funnel-card process-row" data-id="${item.id}">
+        <span class="funnel-brand">${item.brand}</span>
+        <span>${item.number || "Pré-depósito"} · ${client(item.clientId).name}</span>
+        <span>${item.nextAction}</span>
+        <strong class="${riskTone(risk)}">${riskLabels[risk]} · ${formatDate(item.internalDeadline)}</strong>
+      </button>`;
+    }).join("");
+    return `<section class="funnel-column"><div class="funnel-head"><strong>${stage}</strong><span>${items.length}</span></div>${cards || '<div class="funnel-empty">Sem processos</div>'}</section>`;
+  }).join("");
+  return `<div class="page-head"><div><h2>Funil de marcas</h2><p>Visualize a carteira por etapa operacional e priorize o que precisa andar.</p></div><button class="primary-button" id="page-new-process"><span>＋</span>Novo processo</button></div>
+    <section class="funnel-board">${columns}</section>`;
+}
 function clients() {
   const cards = data.clients.filter((c) => !query || [c.name, c.document, c.email, c.contact].join(" ").toLowerCase().includes(query.toLowerCase())).map((item) => {
     const count = data.processes.filter(p => p.clientId === item.id).length;
@@ -210,7 +255,21 @@ function clients() {
 }
 function deadlines() {
   const sorted = data.processes.filter(p => p.internalDeadline).sort((a,b) => a.internalDeadline.localeCompare(b.internalDeadline));
-  return `<div class="page-head"><div><h2>Agenda de prazos</h2><p>Datas internas antecipam a entrega e reduzem risco operacional.</p></div></div><article class="panel">${processTable(filterProcesses(sorted))}</article>`;
+  const alerts = sorted.filter((item) => processRisk(item) !== "ok" || legalRisk(item) !== "ok");
+  return `<div class="page-head"><div><h2>Agenda de prazos</h2><p>Datas internas antecipam a entrega e reduzem risco operacional.</p></div></div>
+    <section class="alert-grid">${deadlineAlertCards(alerts)}</section>
+    <article class="panel">${processTable(filterProcesses(sorted))}</article>`;
+}
+function deadlineAlertCards(items) {
+  if (!items.length) return `<article class="panel"><div class="empty">Nenhum prazo em alerta.</div></article>`;
+  return items.slice(0, 6).map((item) => {
+    const internal = processRisk(item);
+    const legal = legalRisk(item);
+    return `<article class="alert-card ${riskTone(internal)}">
+      <div><span class="badge ${riskTone(internal)}">${riskLabels[internal]}</span><h3>${item.brand}</h3><p>${item.nextAction}</p></div>
+      <div class="alert-card-dates"><span>Interno: ${formatDate(item.internalDeadline)}</span><span>Legal: ${formatDate(item.legalDeadline)}</span><span>Risco legal: ${riskLabels[legal]}</span></div>
+    </article>`;
+  }).join("");
 }
 function documents() {
   const docs = data.documents.filter((d) => {
@@ -245,13 +304,67 @@ function rpi() {
       </div>
     </section>`;
 }
+function agent() {
+  return `<div class="page-head"><div><h2>Agente INPI</h2><p>Consulte a base do guia e transforme respostas em próximos passos operacionais.</p></div><a class="link-button" href="https://manualdemarcas.inpi.gov.br/projects/manual/wiki/Manual_de_Marcas" target="_blank" rel="noreferrer">Manual de Marcas ↗</a></div>
+    <section class="agent-grid">
+      <article class="panel"><div class="panel-header"><div><h3>Perguntar</h3><p>Busca local em fontes carregadas no MarcaFlow</p></div></div><div class="panel-body">
+        <form id="agent-form" class="agent-form">
+          <textarea name="question" rows="4" placeholder="Ex.: Recebi exigência formal. Qual prazo e o que devo conferir?"></textarea>
+          <button class="primary-button" type="submit">Responder com fontes</button>
+        </form>
+        <div class="quick-prompts">
+          <button type="button" data-agent-question="Qual o fluxo de um pedido de marca no INPI?">Fluxo do pedido</button>
+          <button type="button" data-agent-question="Como controlar prazo de oposição e manifestação?">Oposição</button>
+          <button type="button" data-agent-question="O que conferir antes de depositar uma marca?">Pré-depósito</button>
+          <button type="button" data-agent-question="O que fazer depois do deferimento?">Deferimento</button>
+        </div>
+      </div></article>
+      <article class="panel"><div class="panel-header"><div><h3>Resposta</h3><p>Rascunho operacional, não parecer jurídico</p></div></div><div class="panel-body" id="agent-answer">${agentIntro()}</div></article>
+    </section>
+    <article class="panel"><div class="panel-header"><div><h3>Fontes carregadas</h3><p>${(window.marcaFlowKnowledge || []).length} bloco(s) indexado(s)</p></div></div><div class="panel-body source-grid">${knowledgeSources()}</div></article>`;
+}
+function agentIntro() {
+  return `<div class="notice quiet">Faça uma pergunta sobre fluxo, prazos, busca, GRU, RPI, oposição, exigência ou deferimento. O agente responde usando os blocos carregados e mostra as fontes usadas.</div>`;
+}
+function knowledgeSources() {
+  return (window.marcaFlowKnowledge || []).map(item => `<a class="source-card" href="${item.url}" target="_blank" rel="noreferrer"><strong>${item.title}</strong><span>${item.source}</span></a>`).join("");
+}
+function tokenize(text) {
+  return String(text || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().split(/[^a-z0-9]+/).filter(token => token.length > 2);
+}
+function retrieveKnowledge(question) {
+  const terms = tokenize(question);
+  return (window.marcaFlowKnowledge || []).map((item) => {
+    const haystack = tokenize(`${item.title} ${item.text} ${item.source}`);
+    const score = terms.reduce((sum, term) => sum + haystack.filter(word => word.includes(term) || term.includes(word)).length, 0);
+    return { ...item, score };
+  }).filter(item => item.score > 0).sort((a, b) => b.score - a.score).slice(0, 3);
+}
+function answerQuestion(question) {
+  const matches = retrieveKnowledge(question);
+  if (!matches.length) {
+    return `<div class="empty">Não encontrei base suficiente para responder. Tente mencionar termos como RPI, oposição, exigência, GRU, busca, deferimento ou renovação.</div>`;
+  }
+  const checklist = buildChecklist(question);
+  return `<div class="agent-response"><h3>Resposta operacional</h3><p>${matches[0].text}</p>${checklist}<div class="notice">Confira a publicação oficial e o Manual de Marcas vigente antes de cumprir prazo ou tomar decisão processual.</div><h3>Fontes usadas</h3>${matches.map(item => `<a class="source-card" href="${item.url}" target="_blank" rel="noreferrer"><strong>${item.title}</strong><span>${item.source}</span><p>${item.text}</p></a>`).join("")}</div>`;
+}
+function buildChecklist(question) {
+  const text = question.toLowerCase();
+  const items = [];
+  if (text.includes("oposi")) items.push("Localizar a publicação da oposição na RPI e conferir o inteiro teor.", "Registrar prazo legal de 60 dias e prazo interno antecipado.", "Separar provas de uso, distintividade e diferenças entre sinais/produtos.");
+  if (text.includes("exig")) items.push("Identificar se a exigência é formal ou de mérito.", "Conferir o prazo aplicável antes de protocolar resposta.", "Anexar documentos e justificativas no e-Marcas com GRU quando aplicável.");
+  if (text.includes("busca") || text.includes("deposit")) items.push("Classificar produtos e serviços antes da busca.", "Pesquisar marcas semelhantes por palavra-chave, titular e classe.", "Guardar evidências da busca e riscos encontrados.");
+  if (text.includes("defer") || text.includes("concess")) items.push("Acompanhar concessão e emissão do certificado.", "Arquivar certificado e atualizar status para registro.", "Criar alerta de renovação para o nono ano de vigência.");
+  if (!items.length) items.push("Conferir a etapa atual do processo.", "Validar o despacho no PDF oficial da RPI.", "Registrar próxima ação, prazo legal e prazo interno no MarcaFlow.");
+  return `<ul class="agent-checklist">${items.map(item => `<li>${item}</li>`).join("")}</ul>`;
+}
 function movementList(items) {
   if (!items.length) return `<div class="empty">Nenhuma movimentação importada.</div>`;
   return items.map(item => `<div class="movement"><div class="movement-top"><strong>${item.brand}</strong><span class="badge ${item.tone}">${item.rpi}</span></div><span>${item.dispatchName}</span><span>${item.processNumber} · importado em ${formatDate(item.importedAt)}</span><div class="movement-code">${item.dispatchCode}</div></div>`).join("");
 }
 function render() {
-  document.getElementById("page-title").textContent = ({ dashboard: "Visão geral", processes: "Processos", clients: "Clientes", deadlines: "Agenda", documents: "Documentos", rpi: "Monitor RPI" })[view];
-  document.getElementById("app-view").innerHTML = ({ dashboard, processes, clients, deadlines, documents, rpi })[view]();
+  document.getElementById("page-title").textContent = ({ dashboard: "Visão geral", processes: "Processos", funnel: "Funil", clients: "Clientes", deadlines: "Agenda", documents: "Documentos", rpi: "Monitor RPI", agent: "Agente INPI" })[view];
+  document.getElementById("app-view").innerHTML = ({ dashboard, processes, funnel, clients, deadlines, documents, rpi, agent })[view]();
   document.querySelectorAll(".nav-item[data-view]").forEach((button) => button.classList.toggle("active", button.dataset.view === view));
   document.getElementById("alert-count").textContent = urgentProcesses().length;
   bindViewEvents();
@@ -268,6 +381,17 @@ function bindViewEvents() {
   document.getElementById("upload-rpi-file")?.addEventListener("click", selectRpiFile);
   document.getElementById("export-tracked-portfolio")?.addEventListener("click", exportTrackedPortfolio);
   document.getElementById("export-tracked-portfolio-side")?.addEventListener("click", exportTrackedPortfolio);
+  document.getElementById("agent-form")?.addEventListener("submit", handleAgentSubmit);
+  document.querySelectorAll("[data-agent-question]").forEach(button => button.addEventListener("click", () => {
+    const form = document.getElementById("agent-form");
+    form.question.value = button.dataset.agentQuestion;
+    document.getElementById("agent-answer").innerHTML = answerQuestion(form.question.value);
+  }));
+}
+function handleAgentSubmit(event) {
+  event.preventDefault();
+  const question = new FormData(event.currentTarget).get("question");
+  document.getElementById("agent-answer").innerHTML = answerQuestion(question);
 }
 function applyProcessFilters() {
   const status = document.getElementById("status-filter").value;

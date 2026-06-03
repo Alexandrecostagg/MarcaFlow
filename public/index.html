@@ -22,6 +22,9 @@
         <button class="nav-item" data-view="processes">
           <span class="icon">▤</span><span>Processos</span>
         </button>
+        <button class="nav-item" data-view="funnel">
+          <span class="icon">▥</span><span>Funil</span>
+        </button>
         <button class="nav-item" data-view="clients">
           <span class="icon">♙</span><span>Clientes</span>
         </button>
@@ -33,6 +36,9 @@
         </button>
         <button class="nav-item" data-view="rpi">
           <span class="icon">↻</span><span>Monitor RPI</span>
+        </button>
+        <button class="nav-item" data-view="agent">
+          <span class="icon">◇</span><span>Agente INPI</span>
         </button>
       </nav>
       <div class="sidebar-bottom">
@@ -150,6 +156,7 @@
 
     <input id="rpi-file-input" type="file" accept=".xml,text/xml,application/xml" hidden />
     <script type="module" src="./firebase-service.js"></script>
+    <script src="./knowledge-base.js"></script>
     <script src="./app.js"></script>
   </body>
 </html>
