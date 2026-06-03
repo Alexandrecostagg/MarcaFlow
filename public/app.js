@@ -309,6 +309,7 @@ function agent() {
     <section class="agent-grid">
       <article class="panel"><div class="panel-header"><div><h3>Perguntar</h3><p>Busca local em fontes carregadas no MarcaFlow</p></div></div><div class="panel-body">
         <form id="agent-form" class="agent-form">
+          <label><span>Processo relacionado</span><select name="processId"><option value="">Sem processo específico</option>${data.processes.map((item) => `<option value="${item.id}">${item.brand} · ${item.number || "pré-depósito"}</option>`).join("")}</select></label>
           <textarea name="question" rows="4" placeholder="Ex.: Recebi exigência formal. Qual prazo e o que devo conferir?"></textarea>
           <button class="primary-button" type="submit">Responder com fontes</button>
         </form>
@@ -347,6 +348,48 @@ function answerQuestion(question) {
   }
   const checklist = buildChecklist(question);
   return `<div class="agent-response"><h3>Resposta operacional</h3><p>${matches[0].text}</p>${checklist}<div class="notice">Confira a publicação oficial e o Manual de Marcas vigente antes de cumprir prazo ou tomar decisão processual.</div><h3>Fontes usadas</h3>${matches.map(item => `<a class="source-card" href="${item.url}" target="_blank" rel="noreferrer"><strong>${item.title}</strong><span>${item.source}</span><p>${item.text}</p></a>`).join("")}</div>`;
+}
+function escapeHtml(value) {
+  return String(value || "").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" })[char]);
+}
+function renderAgentAnswer(answer, sources, meta = "") {
+  const paragraphs = String(answer || "").split(/\n{2,}/).map((part) => part.trim()).filter(Boolean);
+  return `<div class="agent-response">${meta ? `<span class="badge gray">${escapeHtml(meta)}</span>` : ""}${paragraphs.map((part) => `<p>${escapeHtml(part).replace(/\n/g, "<br>")}</p>`).join("")}<div class="notice">Confira a publicação oficial e o Manual de Marcas vigente antes de cumprir prazo ou tomar decisão processual.</div><h3>Fontes usadas</h3>${sources.map(item => `<a class="source-card" href="${item.url}" target="_blank" rel="noreferrer"><strong>${escapeHtml(item.title)}</strong><span>${escapeHtml(item.source)}</span><p>${escapeHtml(item.text)}</p></a>`).join("")}</div>`;
+}
+function agentProcessPayload(id) {
+  const item = processById(id);
+  if (!item) return null;
+  return {
+    brand: item.brand,
+    number: item.number,
+    client: client(item.clientId).name,
+    classes: item.classes,
+    flowStage: item.flowStage,
+    status: item.status,
+    nextAction: item.nextAction,
+    legalDeadline: item.legalDeadline,
+    internalDeadline: item.internalDeadline,
+    lastRpi: item.lastRpi,
+    lastDispatchCode: item.lastDispatchCode,
+    lastDispatchName: item.lastDispatchName
+  };
+}
+async function answerQuestionWithBackend(question, processId = "") {
+  const localMatches = retrieveKnowledge(question);
+  if (!localMatches.length) return answerQuestion(question);
+  try {
+    const response = await fetch("/api/agent", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ question, process: agentProcessPayload(processId) })
+    });
+    const payload = await response.json();
+    if (!response.ok || payload.fallback || !payload.answer) return answerQuestion(question);
+    return renderAgentAnswer(payload.answer, payload.sources || localMatches, `OpenAI · ${payload.model || "modelo configurado"}`);
+  } catch (error) {
+    console.warn("Agente backend indisponível, usando resposta local.", error);
+    return answerQuestion(question);
+  }
 }
 function buildChecklist(question) {
   const text = question.toLowerCase();
@@ -387,13 +430,18 @@ function bindViewEvents() {
   document.querySelectorAll("[data-agent-question]").forEach(button => button.addEventListener("click", () => {
     const form = document.getElementById("agent-form");
     form.question.value = button.dataset.agentQuestion;
-    document.getElementById("agent-answer").innerHTML = answerQuestion(form.question.value);
+    submitAgentQuestion(form);
   }));
 }
-function handleAgentSubmit(event) {
+async function submitAgentQuestion(form) {
+  const answer = document.getElementById("agent-answer");
+  answer.innerHTML = `<div class="empty">Consultando agente...</div>`;
+  const values = Object.fromEntries(new FormData(form));
+  answer.innerHTML = await answerQuestionWithBackend(values.question, values.processId);
+}
+async function handleAgentSubmit(event) {
   event.preventDefault();
-  const question = new FormData(event.currentTarget).get("question");
-  document.getElementById("agent-answer").innerHTML = answerQuestion(question);
+  await submitAgentQuestion(event.currentTarget);
 }
 function applyProcessFilters() {
   const status = document.getElementById("status-filter").value;

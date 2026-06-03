@@ -32,9 +32,9 @@ Nao e necessario instalar dependencias ou iniciar servidor.
 - historico de importacoes e movimentacoes encontradas.
 - agente INPI local com recuperacao de trechos do Guia Basico, Guia do Pedido de Marca e Manual de Marcas.
 
-## Agente INPI e RAG local
+## Agente INPI e RAG
 
-A tela `Agente INPI` usa uma base local em `public/knowledge-base.js`. Ela recupera trechos por relevancia, mostra as fontes usadas e gera uma resposta operacional com checklist.
+A tela `Agente INPI` usa uma base local em `public/knowledge-base.js` e, quando configurado, chama o backend seguro `/api/agent` em Cloudflare Pages Functions. A chave da OpenAI fica somente no servidor, em segredo do Cloudflare.
 
 Fontes iniciais:
 
@@ -43,7 +43,22 @@ Fontes iniciais:
 - Manual de Marcas do INPI;
 - regras operacionais do proprio MarcaFlow.
 
-Essa primeira versao nao envia perguntas para modelo externo e nao substitui conferencia juridica. A evolucao natural e criar um backend seguro para usar embeddings, OpenAI API e documentos completos sem expor chaves no navegador.
+Se `OPENAI_API_KEY` nao estiver configurada, o painel usa a resposta local por recuperacao simples de trechos. Mesmo com OpenAI, a resposta nao substitui conferencia juridica.
+
+Para ativar o backend com OpenAI:
+
+```bash
+cd "/Users/alexandregomesdacosta/Documents/Projetos_DEV/MarcaFlow"
+npx wrangler pages secret put OPENAI_API_KEY --project-name marcaflow
+```
+
+Opcionalmente, configure outro modelo:
+
+```bash
+npx wrangler pages secret put OPENAI_MODEL --project-name marcaflow
+```
+
+O padrao do backend e `gpt-5.4-mini`.
 
 ## Monitor semanal da RPI
 
@@ -131,6 +146,7 @@ O XML e usado para triagem. A publicacao oficial deve ser conferida no PDF da RP
 ## Infraestrutura
 
 - Frontend estatico: Cloudflare Pages.
+- Backend: Cloudflare Pages Functions em `/api/agent`.
 - Dados compartilhados: Firebase Firestore.
 - Login: Firebase Authentication por e-mail e senha.
 - Fallback: `localStorage` no navegador quando o usuario nao estiver autenticado.
