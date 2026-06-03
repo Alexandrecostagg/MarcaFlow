@@ -377,10 +377,12 @@ function agentProcessPayload(id) {
 async function answerQuestionWithBackend(question, processId = "") {
   const localMatches = retrieveKnowledge(question);
   if (!localMatches.length) return answerQuestion(question);
+  const token = await window.marcaFlowCloud?.getIdToken?.();
+  if (!token) return `${agentIntro()}<div class="notice">Entre no MarcaFlow para usar o agente com OpenAI. Enquanto isso, use as respostas locais com fontes abaixo.</div>${answerQuestion(question)}`;
   try {
     const response = await fetch("/api/agent", {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: { "content-type": "application/json", authorization: `Bearer ${token}` },
       body: JSON.stringify({ question, process: agentProcessPayload(processId) })
     });
     const payload = await response.json();

@@ -43,7 +43,7 @@ Fontes iniciais:
 - Manual de Marcas do INPI;
 - regras operacionais do proprio MarcaFlow.
 
-Se `OPENAI_API_KEY` nao estiver configurada, o painel usa a resposta local por recuperacao simples de trechos. Mesmo com OpenAI, a resposta nao substitui conferencia juridica.
+O backend exige login Firebase: o navegador envia o ID token do usuario autenticado e a Function valida assinatura, emissor e audiencia antes de chamar a OpenAI. Se o usuario nao estiver logado ou se `OPENAI_API_KEY` nao estiver configurada, o painel usa a resposta local por recuperacao simples de trechos. Mesmo com OpenAI, a resposta nao substitui conferencia juridica.
 
 Para ativar o backend com OpenAI:
 

@@ -41,12 +41,17 @@ async function saveWorkspace(payload) {
   }, { merge: true });
 }
 
+async function getIdToken() {
+  return auth.currentUser ? auth.currentUser.getIdToken() : "";
+}
+
 window.marcaFlowCloud = {
   auth,
   login,
   logout,
   loadWorkspace,
-  saveWorkspace
+  saveWorkspace,
+  getIdToken
 };
 
 onAuthStateChanged(auth, user => {

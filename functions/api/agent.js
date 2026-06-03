@@ -68,9 +68,59 @@ const jsonHeaders = {
   "content-type": "application/json; charset=utf-8",
   "cache-control": "no-store"
 };
+const FIREBASE_CERTS_URL = "https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com";
+const FIREBASE_PROJECT_ID = "marcaflow-inpi";
 
 function json(payload, status = 200) {
   return new Response(JSON.stringify(payload), { status, headers: jsonHeaders });
+}
+
+function base64UrlToBytes(value) {
+  const base64 = value.replace(/-/g, "+").replace(/_/g, "/").padEnd(Math.ceil(value.length / 4) * 4, "=");
+  const binary = atob(base64);
+  return Uint8Array.from(binary, (char) => char.charCodeAt(0));
+}
+
+function decodeJwtPart(value) {
+  return JSON.parse(new TextDecoder().decode(base64UrlToBytes(value)));
+}
+
+async function verifyFirebaseToken(request) {
+  const auth = request.headers.get("authorization") || "";
+  const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
+  if (!token) throw new Error("missing-token");
+
+  const [headerPart, payloadPart, signaturePart] = token.split(".");
+  if (!headerPart || !payloadPart || !signaturePart) throw new Error("malformed-token");
+
+  const header = decodeJwtPart(headerPart);
+  const payload = decodeJwtPart(payloadPart);
+  const now = Math.floor(Date.now() / 1000);
+  const issuer = `https://securetoken.google.com/${FIREBASE_PROJECT_ID}`;
+
+  if (payload.aud !== FIREBASE_PROJECT_ID) throw new Error("invalid-audience");
+  if (payload.iss !== issuer) throw new Error("invalid-issuer");
+  if (!payload.sub || typeof payload.sub !== "string") throw new Error("invalid-subject");
+  if (payload.exp <= now || payload.iat > now + 60) throw new Error("invalid-time");
+
+  const response = await fetch(FIREBASE_CERTS_URL, {
+    headers: { accept: "application/json" },
+    cf: { cacheTtl: 3600, cacheEverything: true }
+  });
+  if (!response.ok) throw new Error("jwks-unavailable");
+  const jwks = await response.json();
+  const jwk = (jwks.keys || []).find((key) => key.kid === header.kid);
+  if (!jwk) throw new Error("unknown-key");
+
+  const cryptoKey = await crypto.subtle.importKey("jwk", jwk, { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, false, ["verify"]);
+  const verified = await crypto.subtle.verify(
+    "RSASSA-PKCS1-v1_5",
+    cryptoKey,
+    base64UrlToBytes(signaturePart),
+    new TextEncoder().encode(`${headerPart}.${payloadPart}`)
+  );
+  if (!verified) throw new Error("invalid-signature");
+  return payload;
 }
 
 function tokenize(text) {
@@ -122,6 +172,11 @@ export async function onRequestPost(context) {
   const env = context.env || {};
   const contentLength = Number(request.headers.get("content-length") || "0");
   if (contentLength > 12000) return json({ error: "Payload muito grande." }, 413);
+  try {
+    await verifyFirebaseToken(request);
+  } catch {
+    return json({ error: "Autenticacao obrigatoria.", fallback: true, sources: [] }, 401);
+  }
 
   let payload;
   try {
