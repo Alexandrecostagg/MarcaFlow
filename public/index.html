@@ -83,6 +83,7 @@
           <div><strong>Monitor RPI</strong><span>Importação manual ativa</span></div>
         </div>
         <button class="nav-item" id="export-data"><span class="icon">⇩</span><span>Exportar dados</span></button>
+        <button class="nav-item" id="restore-data"><span class="icon">⇧</span><span>Restaurar backup</span></button>
       </div>
     </aside>
 
@@ -109,7 +110,7 @@
     <dialog id="process-modal">
       <form method="dialog" id="process-form" class="dialog-form">
         <div class="dialog-header">
-          <div><p class="eyebrow">Cadastro operacional</p><h2>Novo processo</h2></div>
+          <div><p class="eyebrow">Cadastro operacional</p><h2 id="process-modal-title">Novo processo</h2></div>
           <button class="close-button" type="button" data-close="process-modal" title="Fechar">×</button>
         </div>
         <div class="form-grid">
@@ -159,7 +160,7 @@
     <dialog id="client-modal">
       <form method="dialog" id="client-form" class="dialog-form">
         <div class="dialog-header">
-          <div><p class="eyebrow">Relacionamento</p><h2>Novo cliente</h2></div>
+          <div><p class="eyebrow">Relacionamento</p><h2 id="client-modal-title">Novo cliente</h2></div>
           <button class="close-button" type="button" data-close="client-modal" title="Fechar">×</button>
         </div>
         <div class="form-grid">
@@ -177,8 +178,33 @@
           <label><span>Comprovante / validação</span><input name="discountEvidence" placeholder="Ex.: CCMEI, declaração, documento" aria-label="Comprovante de validação" /></label>
         </div>
         <div class="dialog-actions">
+          <button type="button" id="delete-client-btn" class="danger-button" style="display:none">Excluir</button>
+          <span style="flex:1"></span>
           <button type="button" data-close="client-modal" class="secondary-button">Cancelar</button>
           <button type="submit" value="default" class="primary-button">Salvar cliente</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="document-modal">
+      <form method="dialog" id="document-form" class="dialog-form">
+        <div class="dialog-header">
+          <div><p class="eyebrow">Central de documentos</p><h2 id="document-modal-title">Adicionar documento</h2></div>
+          <button class="close-button" type="button" data-close="document-modal" title="Fechar">×</button>
+        </div>
+        <div class="form-grid">
+          <label><span>Nome / arquivo</span><input required name="name" placeholder="Ex.: GRU 2026 — registro" aria-label="Nome do documento" /></label>
+          <label><span>Tipo</span>
+            <select name="type" aria-label="Tipo de documento">
+              <option>Protocolo</option><option>GRU</option><option>Despacho</option><option>Certificado</option><option>Proposta</option><option>Outro</option>
+            </select>
+          </label>
+          <label><span>Processo</span><select required name="processId" id="document-process-select" aria-label="Processo vinculado"></select></label>
+          <label><span>Data</span><input name="date" type="date" aria-label="Data do documento" /></label>
+        </div>
+        <div class="dialog-actions">
+          <button type="button" data-close="document-modal" class="secondary-button">Cancelar</button>
+          <button type="submit" value="default" class="primary-button">Salvar documento</button>
         </div>
       </form>
     </dialog>
@@ -207,25 +233,26 @@
     <input id="rpi-file-input" type="file" accept=".xml,text/xml,application/xml" hidden />
     <input id="monitor-report-input" type="file" accept=".json,application/json" hidden />
     <input id="portfolio-import-input" type="file" accept=".json,application/json,.csv,text/csv" hidden />
-    <script type="module" src="./firebase-service.js?v=2026.08.26"></script>
-    <script src="./knowledge-base.js?v=2026.08.26"></script>
-    <script type="module" src="./utils.js?v=2026.08.26"></script>
-    <script type="module" src="./store.js?v=2026.08.26"></script>
-    <script type="module" src="./business.js?v=2026.08.26"></script>
-    <script type="module" src="./views.js?v=2026.08.26"></script>
-    <script type="module" src="./agent.js?v=2026.08.26"></script>
-    <script type="module" src="./search.js?v=2026.08.26"></script>
-    <script type="module" src="./alerts.js?v=2026.08.26"></script>
-    <script type="module" src="./gru.js?v=2026.08.26"></script>
-    <script type="module" src="./antteriority.js?v=2026.08.26"></script>
-    <script type="module" src="./petitions.js?v=2026.08.26"></script>
-    <script type="module" src="./emarcas.js?v=2026.08.26"></script>
-    <script type="module" src="./financial.js?v=2026.08.26"></script>
-    <script type="module" src="./reports.js?v=2026.08.26"></script>
-    <script type="module" src="./imports.js?v=2026.08.26"></script>
-    <script type="module" src="./a11y.js?v=2026.08.26"></script>
-    <script type="module" src="./analytics.js?v=2026.08.26"></script>
-    <script type="module" src="./backup.js?v=2026.08.26"></script>
-    <script type="module" src="./main.js?v=2026.08.26"></script>
+    <input id="backup-restore-input" type="file" accept=".json,application/json" hidden />
+    <script type="module" src="./firebase-service.js?v=2026.08.29"></script>
+    <script src="./knowledge-base.js?v=2026.08.29"></script>
+    <script type="module" src="./utils.js?v=2026.08.29"></script>
+    <script type="module" src="./store.js?v=2026.08.29"></script>
+    <script type="module" src="./business.js?v=2026.08.29"></script>
+    <script type="module" src="./views.js?v=2026.08.29"></script>
+    <script type="module" src="./agent.js?v=2026.08.29"></script>
+    <script type="module" src="./search.js?v=2026.08.29"></script>
+    <script type="module" src="./alerts.js?v=2026.08.29"></script>
+    <script type="module" src="./gru.js?v=2026.08.29"></script>
+    <script type="module" src="./antteriority.js?v=2026.08.29"></script>
+    <script type="module" src="./petitions.js?v=2026.08.29"></script>
+    <script type="module" src="./emarcas.js?v=2026.08.29"></script>
+    <script type="module" src="./financial.js?v=2026.08.29"></script>
+    <script type="module" src="./reports.js?v=2026.08.29"></script>
+    <script type="module" src="./imports.js?v=2026.08.29"></script>
+    <script type="module" src="./a11y.js?v=2026.08.29"></script>
+    <script type="module" src="./analytics.js?v=2026.08.29"></script>
+    <script type="module" src="./backup.js?v=2026.08.29"></script>
+    <script type="module" src="./main.js?v=2026.08.29"></script>
   </body>
 </html>

@@ -1,7 +1,7 @@
-import { data, client, processById } from "./store.js";
-import { normalizeKey, valueOf, downloadJson, sanitizeXmlText, validateJsonPayload, validateMonitorReport } from "./utils.js";
-import { flowStageByStatus, addDays, brToIso, iso } from "./business.js";
-import { openModal, closeModal } from "./utils.js";
+import { data, client, processById } from "./store.js?v=2026.08.29";
+import { normalizeKey, valueOf, downloadJson, sanitizeXmlText, validateJsonPayload, validateMonitorReport } from "./utils.js?v=2026.08.29";
+import { flowStageByStatus, addDays, brToIso, iso } from "./business.js?v=2026.08.29";
+import { openModal, closeModal } from "./utils.js?v=2026.08.29";
 
 const dispatchRule = {
   check(name) {

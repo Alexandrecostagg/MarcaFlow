@@ -3,8 +3,8 @@
  * Biblioteca de petições padronizadas com preenchimento automático
  */
 
-import { data, client, save } from "./store.js";
-import { escapeHtml } from "./utils.js";
+import { data, client, save } from "./store.js?v=2026.08.29";
+import { escapeHtml } from "./utils.js?v=2026.08.29";
 
 const PETITION_TYPES = {
   "manifestacao_oposicao": {

@@ -3,9 +3,9 @@
  * Cálculo de taxas, código de atividade e pré-preenchimento
  */
 
-import { data, client } from "./store.js";
-import { OFFICIAL_FEES, discountAssessment, suggestedDiscountCategory } from "./business.js";
-import { escapeHtml, downloadJson } from "./utils.js";
+import { data, client } from "./store.js?v=2026.08.29";
+import { OFFICIAL_FEES, discountAssessment, suggestedDiscountCategory } from "./business.js?v=2026.08.29";
+import { escapeHtml, downloadJson } from "./utils.js?v=2026.08.29";
 
 const GRU_CODE_MAPPING = {
   "pedido_registro": "0原0001",

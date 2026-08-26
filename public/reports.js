@@ -3,9 +3,9 @@
  * Geração de relatórios HTML/PDF customizáveis
  */
 
-import { data, client } from "./store.js";
-import { escapeHtml, downloadJson } from "./utils.js";
-import { formatDate, daysUntil, statusTone, processRisk, legalRisk, formatMoney } from "./business.js";
+import { data, client } from "./store.js?v=2026.08.29";
+import { escapeHtml, downloadJson } from "./utils.js?v=2026.08.29";
+import { formatDate, daysUntil, statusTone, processRisk, legalRisk, formatMoney } from "./business.js?v=2026.08.29";
 
 /**
  * Gera relatório HTML de andamento de processo

@@ -4,7 +4,7 @@
 
 [![Deploy](https://img.shields.io/badge/deploy-Cloudflare%20Pages-green)](https://marcaflow.pages.dev)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
-[![Version](https://img.shields.io/badge/version-2.0.0-orange)](https://github.com/seu-usuario/marcaflow/releases)
+[![Version](https://img.shields.io/badge/version-2.0.0-orange)](https://github.com/Alexandrecostagg/MarcaFlow/releases)
 
 ---
 
@@ -81,7 +81,7 @@
 
 ### Clonar o repositório
 ```bash
-git clone https://github.com/seu-usuario/marcaflow.git
+git clone https://github.com/Alexandrecostagg/MarcaFlow.git
 cd marcaflow
 ```
 
@@ -190,7 +190,7 @@ User Input → main.js → [data | business | views] → Render
 
 ### Reportar Bugs
 ```bash
-github.com/seu-usuario/marcaflow/issues
+github.com/Alexandrecostagg/MarcaFlow/issues
 ```
 
 ### Pull Requests

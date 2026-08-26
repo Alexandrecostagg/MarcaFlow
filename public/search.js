@@ -3,9 +3,9 @@
  * Integração com API de busca do INPI (pePI)
  */
 
-import { data, client } from "./store.js";
-import { recommendedClasses, availabilityRisk, parseClasses } from "./business.js";
-import { escapeHtml } from "./utils.js";
+import { data, client } from "./store.js?v=2026.08.29";
+import { recommendedClasses, availabilityRisk, parseClasses } from "./business.js?v=2026.08.29";
+import { escapeHtml } from "./utils.js?v=2026.08.29";
 
 const INPI_SEARCH_URL = "https://busca.inpi.gov.br/pePI/";
 const INPI_API_BASE = "https://busca.inpi.gov.br/svc";

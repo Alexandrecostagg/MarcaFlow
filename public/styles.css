@@ -70,6 +70,11 @@ h3 { margin-bottom: 4px; font-size: 14px; }
 .icon-button { position: relative; display: grid; width: 36px; height: 36px; place-items: center; border: 1px solid var(--line); border-radius: 6px; background: #fff; color: var(--text); font-size: 18px; }
 .icon-button span { position: absolute; top: -5px; right: -5px; display: grid; width: 17px; height: 17px; place-items: center; border-radius: 50%; color: #fff; background: var(--red); font-size: 9px; font-weight: 800; }
 .primary-button, .secondary-button, .text-button { display: inline-flex; gap: 6px; align-items: center; justify-content: center; padding: 9px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; }
+
+.danger-button { display: inline-flex; gap: 6px; align-items: center; justify-content: center; padding: 9px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; border: 1px solid var(--red); color: #fff; background: var(--red); }
+.danger-button:hover { filter: brightness(0.9); }
+.text-button.danger-text { color: var(--red); }
+.doc-actions { white-space: nowrap; }
 .link-button { display: inline-flex; gap: 6px; align-items: center; padding: 9px 12px; border: 1px solid var(--line); border-radius: 6px; color: var(--green); background: #fff; font-size: 12px; font-weight: 800; text-decoration: none; }
 .primary-button { border: 1px solid var(--green); color: #fff; background: var(--green); }
 .primary-button:hover { background: var(--green-dark); }

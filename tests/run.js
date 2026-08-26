@@ -73,6 +73,13 @@ global.localStorage = {
     if (store.processById(target.id) !== target) throw new Error('processById não encontrou o processo');
   });
 
+  test('setData substitui o workspace preservando a referência', () => {
+    const before = store.data;
+    store.setData({ clients: [], processes: [{ id: 'p1', brand: 'X' }], documents: [], movements: [], imports: [] });
+    if (before !== store.data) throw new Error('Referência exportada mudou');
+    if (store.data.processes[0].brand !== 'X') throw new Error('Coleção não substituída');
+  });
+
   // ===== TESTES: BUSINESS LOGIC (business.js) =====
 
   test('formatDate formata data pt-BR', () => {

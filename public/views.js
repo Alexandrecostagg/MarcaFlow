@@ -1,6 +1,6 @@
 import {
   data, client, processById
-} from "./store.js";
+} from "./store.js?v=2026.08.29";
 import {
   flowStageByStatus, funnelStages, riskLabels,
   formatDate, daysUntil, statusTone, urgentProcesses,
@@ -10,8 +10,8 @@ import {
   classByCode, recommendedClasses, calculateEstimate,
   availabilityRisk, parseClasses, filterProcesses,
   addDays
-} from "./business.js";
-import { escapeHtml } from "./utils.js";
+} from "./business.js?v=2026.08.29";
+import { escapeHtml } from "./utils.js?v=2026.08.29";
 
 function metric(label, value, note, icon) {
   return `<article class="metric"><div class="metric-top"><span>${label}</span><span class="metric-icon">${icon}</span></div><strong>${value}</strong><small>${note}</small></article>`;

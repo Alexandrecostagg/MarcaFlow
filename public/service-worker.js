@@ -1,4 +1,5 @@
-const CACHE_NAME = "marcaflow-v4";
+const CACHE_NAME = "marcaflow-v5";
+const V = "2026.08.29";
 const STATIC_ASSETS = [
   "./",
   "./index.html",
@@ -6,29 +7,29 @@ const STATIC_ASSETS = [
   "./manifest.json",
   "./assets/icon-192.svg",
   "./assets/icon-512.svg",
-  "./utils.js",
-  "./store.js",
-  "./business.js",
-  "./views.js",
-  "./agent.js",
-  "./search.js",
-  "./alerts.js",
-  "./gru.js",
-  "./antteriority.js",
-  "./petitions.js",
-  "./client-dashboard.js",
-  "./client-dashboard.html",
-  "./emarcas.js",
-  "./financial.js",
-  "./reports.js",
-  "./imports.js",
-  "./a11y.js",
-  "./analytics.js",
-  "./backup.js",
-  "./firebase-config.js",
-  "./firebase-service.js",
-  "./knowledge-base.js",
-  "./main.js"
+  `./utils.js?v=${V}`,
+  `./store.js?v=${V}`,
+  `./business.js?v=${V}`,
+  `./views.js?v=${V}`,
+  `./agent.js?v=${V}`,
+  `./search.js?v=${V}`,
+  `./alerts.js?v=${V}`,
+  `./gru.js?v=${V}`,
+  `./antteriority.js?v=${V}`,
+  `./petitions.js?v=${V}`,
+  `./client-dashboard.js?v=${V}`,
+  `./client-dashboard.html`,
+  `./emarcas.js?v=${V}`,
+  `./financial.js?v=${V}`,
+  `./reports.js?v=${V}`,
+  `./imports.js?v=${V}`,
+  `./a11y.js?v=${V}`,
+  `./analytics.js?v=${V}`,
+  `./backup.js?v=${V}`,
+  `./firebase-config.js?v=${V}`,
+  `./firebase-service.js?v=${V}`,
+  `./knowledge-base.js?v=${V}`,
+  `./main.js?v=${V}`
 ];
 
 // Install event - cache static assets
@@ -63,12 +64,10 @@ self.addEventListener("fetch", (event) => {
   // Skip non-GET requests
   if (event.request.method !== "GET") return;
 
-  // Skip Firebase and DeepSeek API calls
-  if (event.request.url.includes("firebaseio.com") ||
-      event.request.url.includes("deepseek.com") ||
-      event.request.url.includes("googleapis.com")) {
-    return;
-  }
+  // Intercepta apenas requisições da mesma origem (CDNs como gstatic/
+  // firebase e a API do agente seguem direto, sem passar pelo cache).
+  const url = new URL(event.request.url);
+  if (url.origin !== self.location.origin) return;
 
   event.respondWith(
     fetch(event.request).then((networkResponse) => {

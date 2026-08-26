@@ -3,8 +3,8 @@
  * Similaridade fonética, visual e conceitual entre marcas
  */
 
-import { data, client } from "./store.js";
-import { escapeHtml } from "./utils.js";
+import { data, client } from "./store.js?v=2026.08.29";
+import { escapeHtml } from "./utils.js?v=2026.08.29";
 
 /**
  * Algoritmo de similaridade fonética (Portugês)

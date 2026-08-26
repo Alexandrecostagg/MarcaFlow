@@ -3,9 +3,9 @@
  * Portal de acompanhamento para clientes
  */
 
-import { data, client, iso } from "./store.js";
-import { formatDate, daysUntil, statusTone, processRisk, legalRisk, riskLabels, formatMoney } from "./business.js";
-import { escapeHtml } from "./utils.js";
+import { data, client, iso } from "./store.js?v=2026.08.29";
+import { formatDate, daysUntil, statusTone, processRisk, legalRisk, riskLabels, formatMoney } from "./business.js?v=2026.08.29";
+import { escapeHtml } from "./utils.js?v=2026.08.29";
 
 /**
  * Gera token de acesso público para cliente

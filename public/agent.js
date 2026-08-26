@@ -1,7 +1,7 @@
-import { escapeHtml } from "./utils.js";
-import { recommendedClasses, calculateEstimate, suggestedDiscountCategory, discountAssessment, discountCategoryOptions, discountStatusBadge, availabilityRisk, parseClasses } from "./business.js";
-import { data, client } from "./store.js";
-import { openModal, closeModal } from "./utils.js";
+import { escapeHtml } from "./utils.js?v=2026.08.29";
+import { recommendedClasses, calculateEstimate, suggestedDiscountCategory, discountAssessment, discountCategoryOptions, discountStatusBadge, availabilityRisk, parseClasses } from "./business.js?v=2026.08.29";
+import { data, client } from "./store.js?v=2026.08.29";
+import { openModal, closeModal } from "./utils.js?v=2026.08.29";
 
 function tokenize(text) {
   return String(text || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().split(/[^a-z0-9]+/).filter(token => token.length > 2);

@@ -3,8 +3,8 @@
  * Sincronização bidirecional com sistema oficial do INPI
  */
 
-import { data, client, save } from "./store.js";
-import { escapeHtml } from "./utils.js";
+import { data, client, save } from "./store.js?v=2026.08.29";
+import { escapeHtml } from "./utils.js?v=2026.08.29";
 
 const E_MARCAS_BASE_URL = "https://sistema.inpi.gov.br";
 const SYNC_STATUS_KEY = "marcaflow-last-sync";

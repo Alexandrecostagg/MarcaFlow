@@ -1,6 +1,6 @@
 // public/backup.js — Backup Automatizado
 
-import { data, load, save } from "./store.js";
+import { data, load, save } from "./store.js?v=2026.08.29";
 
 const Backup = {
   enabled: true,
@@ -174,6 +174,31 @@ const Backup = {
     } catch (error) {
       this.notifyError(error);
     }
+  },
+
+  importWorkspace(text) {
+    let parsed;
+    try {
+      parsed = JSON.parse(text);
+    } catch (_) {
+      throw new Error("Arquivo inválido: JSON incorreto.");
+    }
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      throw new Error("Backup inválido: esperado um workspace.");
+    }
+    if (!["clients", "processes", "documents", "movements", "imports"].some(key => Array.isArray(parsed[key]))) {
+      throw new Error("Backup inválido: coleções não encontradas.");
+    }
+    if (!confirm("Substituir todos os dados atuais por este backup?")) {
+      throw new Error("Restauração cancelada.");
+    }
+    const current = load();
+    Object.keys(current).forEach(key => {
+      if (!(key in parsed)) parsed[key] = current[key];
+    });
+    Object.assign(data, parsed);
+    save();
+    return true;
   },
 
   listBackups() {

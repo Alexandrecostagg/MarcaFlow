@@ -1,4 +1,4 @@
-import { data, client, processById, save, ensureCollections, iso } from "./store.js";
+import { data, client, processById, save, setData, ensureCollections, iso } from "./store.js?v=2026.08.29";
 import {
   flowStageByStatus, funnelStages, riskLabels,
   formatDate, daysUntil, statusTone, urgentProcesses,
@@ -7,9 +7,9 @@ import {
   discountCategoryOptions, discountStatusBadge,
   classByCode, classAffinity, recommendedClasses, calculateEstimate,
   availabilityRisk, parseClasses, filterProcesses, addDays, OFFICIAL_FEES
-} from "./business.js";
-import { metric, processRows, processTable, deadlineList, alertList, deadlineAlertCards, movementList, knowledgeSources } from "./views.js";
-import { escapeHtml, openModal, closeModal, sanitizeAgentInput, showCloudError } from "./utils.js";
+} from "./business.js?v=2026.08.29";
+import { metric, processRows, processTable, deadlineList, alertList, deadlineAlertCards, movementList, knowledgeSources } from "./views.js?v=2026.08.29";
+import { escapeHtml, openModal, closeModal, sanitizeAgentInput, showCloudError } from "./utils.js?v=2026.08.29";
 import {
   answerQuestion, agentIntro, renderAgentAnswer,
   agentProcessPayload, answerQuestionWithBackend,
@@ -17,20 +17,20 @@ import {
   brandOptionsFor, availabilityDecision, feePaymentPlan,
   bindAgentAnswerEvents, clientUpdateForMovement, copyClientUpdate,
   parseAvailabilityCandidates
-} from "./agent.js";
-import { dispatchRule, importPortfolio, importMonitorReportJson, importRpiXml, exportTrackedPortfolio } from "./imports.js";
-import { searchINPI, analyzeResults, renderSearchReport, handleAutomatedSearch, INPI_SEARCH_URL } from "./search.js";
-import { checkUpcomingAlerts, renderAlertsPanel, alertsView, requestNotificationPermission, startAlertChecker } from "./alerts.js";
-import { calculateGRUForRegistration, calculateGRUForRenewal, renderGRUPanel, handleDownloadGRUPDF, handleCopyGRUDetails } from "./gru.js";
-import { analyzeAllAgainstTarget, renderAnteriorityReport } from "./antteriority.js";
-import { petitionsView, showPetitionForm, handlePetitionSubmit } from "./petitions.js";
-import { generateClientToken, validateClientToken, getClientProcesses, renderClientDashboard, generateClientLink } from "./client-dashboard.js";
-import { syncWithEMarcas, renderSyncPanel, handleFullSync, handleIncrementalSync, handleSyncStatus } from "./emarcas.js";
-import { addHonorario, addFatura, addGRUPaid, addExpense, calculateFinancialTotals, renderFinancialPanel, financialView, exportFinancialData } from "./financial.js";
-import { generateProcessReport, generateClientSummaryReport, saveReportHTML } from "./reports.js";
-import A11y from "./a11y.js";
-import Analytics from "./analytics.js";
-import Backup from "./backup.js";
+} from "./agent.js?v=2026.08.29";
+import { dispatchRule, importPortfolio, importMonitorReportJson, importRpiXml, exportTrackedPortfolio } from "./imports.js?v=2026.08.29";
+import { searchINPI, analyzeResults, renderSearchReport, handleAutomatedSearch, INPI_SEARCH_URL } from "./search.js?v=2026.08.29";
+import { checkUpcomingAlerts, renderAlertsPanel, alertsView, requestNotificationPermission, startAlertChecker } from "./alerts.js?v=2026.08.29";
+import { calculateGRUForRegistration, calculateGRUForRenewal, renderGRUPanel, handleDownloadGRUPDF, handleCopyGRUDetails } from "./gru.js?v=2026.08.29";
+import { analyzeAllAgainstTarget, renderAnteriorityReport } from "./antteriority.js?v=2026.08.29";
+import { petitionsView, showPetitionForm, handlePetitionSubmit } from "./petitions.js?v=2026.08.29";
+import { generateClientToken, validateClientToken, getClientProcesses, renderClientDashboard, generateClientLink } from "./client-dashboard.js?v=2026.08.29";
+import { syncWithEMarcas, renderSyncPanel, handleFullSync, handleIncrementalSync, handleSyncStatus } from "./emarcas.js?v=2026.08.29";
+import { addHonorario, addFatura, addGRUPaid, addExpense, calculateFinancialTotals, renderFinancialPanel, financialView, exportFinancialData } from "./financial.js?v=2026.08.29";
+import { generateProcessReport, generateClientSummaryReport, saveReportHTML } from "./reports.js?v=2026.08.29";
+import A11y from "./a11y.js?v=2026.08.29";
+import Analytics from "./analytics.js?v=2026.08.29";
+import Backup from "./backup.js?v=2026.08.29";
 
 // Expor para uso global
 window.searchINPI = searchINPI;
@@ -80,6 +80,9 @@ let query = "";
 let cloudUser = null;
 let cloudSaveTimer = null;
 let availabilityPrefill = null;
+let editingProcessId = null;
+let editingClientId = null;
+let editingDocumentId = null;
 
 window.data = data;
 window.view = view;
@@ -104,7 +107,7 @@ async function loadCloudWorkspace() {
     const remote = await window.marcaFlowCloud.loadWorkspace();
     if (remote) {
       loadingCloudData = true;
-      data = remote;
+      setData(remote);
       ensureCollections();
       localStorage.setItem("marcaflow-v1", JSON.stringify(data));
       loadingCloudData = false;
@@ -320,7 +323,7 @@ function funnel() {
 function clients() {
   const cards = data.clients.filter((c) => !query || [c.name, c.document, c.email, c.contact].join(" ").toLowerCase().includes(query.toLowerCase())).map((item) => {
     const count = data.processes.filter(p => p.clientId === item.id).length;
-    return `<article class="client-card"><div class="client-card-top"><div><h3>${escapeHtml(item.name)}</h3><span class="badge gray">${escapeHtml(item.profile)}</span> ${discountStatusBadge(item)}</div><button class="icon-button" title="Detalhes do cliente">⋯</button></div><p>${escapeHtml(item.document)}</p><p>${escapeHtml(item.email || "E-mail não informado")}</p><p>${escapeHtml(item.phone || "Telefone não informado")}</p><div class="client-card-footer"><span>${count} processo(s)</span><span>${escapeHtml(item.contact || "Sem contato")}</span></div></article>`;
+    return `<article class="client-card"><div class="client-card-top"><div><h3>${escapeHtml(item.name)}</h3><span class="badge gray">${escapeHtml(item.profile)}</span> ${discountStatusBadge(item)}</div><button class="icon-button" title="Editar ou excluir cliente" data-client-edit="${escapeHtml(item.id)}">⋯</button></div><p>${escapeHtml(item.document)}</p><p>${escapeHtml(item.email || "E-mail não informado")}</p><p>${escapeHtml(item.phone || "Telefone não informado")}</p><div class="client-card-footer"><span>${count} processo(s)</span><span>${escapeHtml(item.contact || "Sem contato")}</span></div></article>`;
   }).join("");
   return `<div class="page-head"><div><h2>Clientes</h2><p>Titulares e contatos vinculados à carteira.</p></div><button class="primary-button" id="page-new-client"><span>＋</span>Novo cliente</button></div><section class="client-grid">${cards || '<div class="empty">Nenhum cliente encontrado.</div>'}</section>`;
 }
@@ -338,8 +341,23 @@ function documents() {
     const process = processById(d.processId);
     return !query || [d.name, d.type, process?.brand].join(" ").toLowerCase().includes(query.toLowerCase());
   });
-  const rows = docs.map(d => `<tr><td><span class="doc-icon">▧</span></td><td><span class="brand-name">${escapeHtml(d.name)}</span><br><span class="subtle">${escapeHtml(processById(d.processId)?.brand || "Sem processo")}</span></td><td>${escapeHtml(d.type)}</td><td>${formatDate(d.date)}</td><td><button class="text-button">Visualizar</button></td></tr>`).join("");
-  return `<div class="page-head"><div><h2>Documentos</h2><p>Central de protocolos, GRUs, despachos e certificados.</p></div><button class="secondary-button">＋ Adicionar documento</button></div><article class="panel"><div class="table-wrap"><table><thead><tr><th></th><th>Arquivo / marca</th><th>Tipo</th><th>Data</th><th></th></tr></thead><tbody>${rows || '<tr><td colspan="5" class="empty">Nenhum documento encontrado.</td></tr>'}</tbody></table></div></article>`;
+  const rows = docs.map(d => `<tr><td><span class="doc-icon">▧</span></td><td><span class="brand-name">${escapeHtml(d.name)}</span><br><span class="subtle">${escapeHtml(processById(d.processId)?.brand || "Sem processo")}</span></td><td>${escapeHtml(d.type)}</td><td>${formatDate(d.date)}</td><td class="doc-actions"><button class="text-button" data-doc-edit="${escapeHtml(d.id)}">Editar</button><button class="text-button danger-text" data-doc-remove="${escapeHtml(d.id)}">Remover</button></td></tr>`).join("");
+  return `<div class="page-head"><div><h2>Documentos</h2><p>Central de protocolos, GRUs, despachos e certificados.</p></div><button class="secondary-button" id="add-document">＋ Adicionar documento</button></div><article class="panel"><div class="table-wrap"><table><thead><tr><th></th><th>Arquivo / marca</th><th>Tipo</th><th>Data</th><th></th></tr></thead><tbody>${rows || '<tr><td colspan="5" class="empty">Nenhum documento encontrado.</td></tr>'}</tbody></table></div></article>`;
+}
+
+function showDocumentForm(docData) {
+  editingDocumentId = docData ? docData.id : null;
+  const select = document.getElementById("document-process-select");
+  select.innerHTML = data.processes.map(p => `<option value="${escapeHtml(p.id)}">${escapeHtml(p.brand)} · ${escapeHtml(p.number || "pré-depósito")}</option>`).join("");
+  const form = document.getElementById("document-form");
+  form.reset();
+  if (docData) {
+    Object.entries(docData).forEach(([key, value]) => {
+      if (form.elements[key]) form.elements[key].value = value || "";
+    });
+  }
+  document.getElementById("document-modal-title").textContent = editingDocumentId ? "Editar documento" : "Adicionar documento";
+  openModal("document-modal");
 }
 
 function rpi() {
@@ -462,7 +480,7 @@ function startProcessFromDiagnosis(id) {
   showProcessForm({ brand: record.brand, clientId: record.clientId, classes: record.suggestions.map((item) => item.code).join(", "), presentation: record.presentation, nature: "Produto e serviço", flowStage: "Busca prévia", status: "Preparação", nextAction: "Validar classes e concluir busca de anterioridade", specification: record.currentOffer, salesChannels: record.channels, geographicScope: "Brasil", priorRisk: record.knownSimilar ? "Médio" : "Não avaliado", notes: `Diagnóstico criado em ${formatDate(record.createdAt.slice(0, 10))}. Expansão: ${record.expansion || "não informada"}. Marcas semelhantes informadas: ${record.knownSimilar || "nenhuma"}.` });
 }
 
-function showProcessForm(prefill = {}) {
+function showProcessForm(prefill = {}, editingId = null) {
   const select = document.getElementById("process-client-select");
   if (!data.clients.length) {
     alert("Cadastre o titular em Clientes antes de criar um processo.");
@@ -476,6 +494,8 @@ function showProcessForm(prefill = {}) {
   Object.entries(prefill).forEach(([key, value]) => {
     if (form.elements[key]) form.elements[key].value = value || "";
   });
+  editingProcessId = editingId || (prefill.id || null);
+  document.getElementById("process-modal-title").textContent = editingProcessId ? "Editar processo" : "Novo processo";
   openModal("process-modal");
 }
 
@@ -500,12 +520,30 @@ function showDetails(id) {
     <div class="panel-header"><div><h3>Documentos vinculados</h3><p>${relatedDocs.length} arquivo(s)</p></div></div>
     <div class="panel-body doc-list">${relatedDocs.map(d => `<div class="doc-item"><div class="doc-icon">▧</div><div><strong>${escapeHtml(d.name)}</strong><span>${escapeHtml(d.type)} · ${formatDate(d.date)}</span></div></div>`).join("") || '<span class="subtle">Nenhum documento vinculado.</span>'}</div>
     <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--line); display: flex; gap: 8px; flex-wrap: wrap;">
-      ${item.status === "Preparação" || item.status === "Protocolado" ? `<button class="primary-button" id="open-gru-modal">🧾 Gerar GRU</button>` : ""}
+      <button class="primary-button" id="edit-process-btn">✎ Editar</button>
+      <button class="danger-button" id="delete-process-btn">Excluir</button>
+      ${item.status === "Preparação" || item.status === "Protocolado" ? `<button class="secondary-button" id="open-gru-modal">🧾 Gerar GRU</button>` : ""}
       <button class="secondary-button" id="open-client-dashboard">👤 Dashboard Cliente</button>
       <button class="secondary-button" id="open-report-modal">📄 Gerar Relatório</button>
     </div>`;
   openModal("detail-modal");
   document.getElementById("close-detail").addEventListener("click", () => closeModal("detail-modal"));
+
+  // Editar processo
+  document.getElementById("edit-process-btn").addEventListener("click", () => {
+    closeModal("detail-modal");
+    showProcessForm(item, item.id);
+  });
+
+  // Excluir processo
+  document.getElementById("delete-process-btn").addEventListener("click", () => {
+    if (!confirm(`Excluir o processo "${item.brand}"? O registro será removido junto com os documentos vinculados.`)) return;
+    data.processes = data.processes.filter(p => p.id !== item.id);
+    data.documents = data.documents.filter(d => d.processId !== item.id);
+    save();
+    closeModal("detail-modal");
+    if (["processes", "funnel", "dashboard", "deadlines"].includes(view)) render();
+  });
   
   // Handler para botão de GRU
   const gruButton = document.getElementById("open-gru-modal");
@@ -583,8 +621,17 @@ function render() {
 function bindViewEvents() {
   document.querySelectorAll(".process-row").forEach(row => row.addEventListener("click", () => showDetails(row.dataset.id)));
   document.querySelectorAll("[data-go]").forEach(button => button.addEventListener("click", () => { view = button.dataset.go; render(); }));
-  document.getElementById("page-new-process")?.addEventListener("click", showProcessForm);
-  document.getElementById("page-new-client")?.addEventListener("click", () => openModal("client-modal"));
+  document.getElementById("page-new-process")?.addEventListener("click", () => showProcessForm());
+  document.getElementById("page-new-client")?.addEventListener("click", () => showClientForm());
+  document.getElementById("add-document")?.addEventListener("click", () => showDocumentForm());
+  document.querySelectorAll("[data-client-edit]").forEach(btn => btn.addEventListener("click", () => showClientForm(data.clients.find(c => c.id === btn.dataset.clientEdit))));
+  document.querySelectorAll("[data-doc-edit]").forEach(btn => btn.addEventListener("click", () => showDocumentForm(data.documents.find(d => d.id === btn.dataset.docEdit))));
+  document.querySelectorAll("[data-doc-remove]").forEach(btn => btn.addEventListener("click", () => {
+    if (!confirm("Remover este documento?")) return;
+    data.documents = data.documents.filter(d => d.id !== btn.dataset.docRemove);
+    save();
+    render();
+  }));
   document.getElementById("status-filter")?.addEventListener("change", applyProcessFilters);
   document.getElementById("stage-filter")?.addEventListener("change", applyProcessFilters);
   document.getElementById("class-filter")?.addEventListener("change", applyProcessFilters);
@@ -616,7 +663,7 @@ function selectPortfolioImport() { document.getElementById("portfolio-import-inp
 
 document.querySelectorAll(".nav-item[data-view]").forEach(button => button.addEventListener("click", () => { view = button.dataset.view; render(); }));
 document.querySelectorAll("[data-close]").forEach(button => button.addEventListener("click", () => closeModal(button.dataset.close)));
-document.getElementById("open-process-modal").addEventListener("click", showProcessForm);
+document.getElementById("open-process-modal").addEventListener("click", () => showProcessForm());
 document.getElementById("global-search").addEventListener("input", event => { query = event.target.value; render(); });
 document.getElementById("notification-button").addEventListener("click", () => { view = "deadlines"; render(); });
 document.getElementById("cloud-auth-button").addEventListener("click", async () => {
@@ -628,12 +675,13 @@ document.getElementById("cloud-auth-button").addEventListener("click", async () 
 });
 document.getElementById("login-form").addEventListener("submit", async event => {
   event.preventDefault();
+  const form = event.currentTarget;
   const error = document.getElementById("login-error");
-  const values = Object.fromEntries(new FormData(event.currentTarget));
+  const values = Object.fromEntries(new FormData(form));
   error.textContent = "";
   try {
     await window.marcaFlowCloud.login(values.email, values.password);
-    event.currentTarget.reset();
+    form.reset();
     closeModal("login-modal");
   } catch (loginError) {
     console.error(loginError);
@@ -674,16 +722,42 @@ document.getElementById("export-data").addEventListener("click", () => {
   link.click();
   URL.revokeObjectURL(url);
 });
+document.getElementById("restore-data").addEventListener("click", () => document.getElementById("backup-restore-input").click());
+document.getElementById("backup-restore-input").addEventListener("change", async event => {
+  const file = event.target.files[0];
+  if (!file) return;
+  try {
+    await Backup.importWorkspace(await file.text());
+    alert("Backup restaurado com sucesso.");
+    render();
+  } catch (error) {
+    alert(`Não foi possível restaurar: ${error.message}`);
+  }
+  event.target.value = "";
+});
 document.getElementById("process-form").addEventListener("submit", event => {
   event.preventDefault();
   const values = Object.fromEntries(new FormData(event.currentTarget));
   values.flowStage ||= flowStageByStatus[values.status] || "Busca prévia";
   values.lastDispatchName = "";
   values.lastPublicationDate = "";
+  if (editingProcessId) {
+    const target = data.processes.find(p => p.id === editingProcessId);
+    if (target) {
+      Object.assign(target, values);
+      save();
+      event.currentTarget.reset();
+      closeModal("process-modal");
+      editingProcessId = null;
+      if (view === "processes" || view === "funnel" || view === "dashboard") render();
+      return;
+    }
+  }
   data.processes.unshift({ id: crypto.randomUUID(), ...values });
   save();
   event.currentTarget.reset();
   closeModal("process-modal");
+  editingProcessId = null;
   view = "processes";
   render();
 });
@@ -693,11 +767,77 @@ document.getElementById("client-form").addEventListener("submit", event => {
   if (values.discountCategory === "a_confirmar") values.discountCategory = suggestedDiscountCategory(values.profile);
   const assessment = discountAssessment(values);
   values.discountEligible = assessment.percent ? "Sim" : values.discountCategory === "nao_elegivel" ? "Não" : "";
+  if (editingClientId) {
+    const target = data.clients.find(c => c.id === editingClientId);
+    if (target) {
+      Object.assign(target, values);
+      save();
+      event.currentTarget.reset();
+      closeModal("client-modal");
+      editingClientId = null;
+      if (view === "clients") render();
+      return;
+    }
+  }
   data.clients.push({ id: crypto.randomUUID(), ...values });
   save();
   event.currentTarget.reset();
   closeModal("client-modal");
+  editingClientId = null;
   view = "clients";
+  render();
+});
+
+function showClientForm(clientData) {
+  editingClientId = clientData ? clientData.id : null;
+  const form = document.getElementById("client-form");
+  form.reset();
+  if (clientData) {
+    Object.entries(clientData).forEach(([key, value]) => {
+      if (form.elements[key]) form.elements[key].value = value || "";
+    });
+  }
+  document.getElementById("client-modal-title").textContent = editingClientId ? "Editar cliente" : "Novo cliente";
+  document.getElementById("delete-client-btn").style.display = editingClientId ? "" : "none";
+  openModal("client-modal");
+}
+
+document.getElementById("delete-client-btn").addEventListener("click", () => {
+  if (!editingClientId) return;
+  const clientData = data.clients.find(c => c.id === editingClientId);
+  if (!clientData) return;
+  if (!confirm(`Excluir o cliente "${clientData.name}"? Os processos vinculados serão preservados.`)) return;
+  data.clients = data.clients.filter(c => c.id !== editingClientId);
+  data.processes.forEach(p => { if (p.clientId === editingClientId) p.clientId = ""; });
+  save();
+  closeModal("client-modal");
+  editingClientId = null;
+  view = "clients";
+  render();
+});
+
+document.getElementById("document-form").addEventListener("submit", event => {
+  event.preventDefault();
+  const values = Object.fromEntries(new FormData(event.currentTarget));
+  values.date ||= new Date().toISOString().slice(0, 10);
+  if (editingDocumentId) {
+    const target = data.documents.find(d => d.id === editingDocumentId);
+    if (target) {
+      Object.assign(target, values);
+      save();
+      event.currentTarget.reset();
+      closeModal("document-modal");
+      editingDocumentId = null;
+      if (view === "documents") render();
+      return;
+    }
+  }
+  data.documents.push({ id: crypto.randomUUID(), ...values });
+  save();
+  event.currentTarget.reset();
+  closeModal("document-modal");
+  editingDocumentId = null;
+  view = "documents";
   render();
 });
 

@@ -1,4 +1,4 @@
-import { flowStageByStatus, legacyDiscountCategory } from "./utils.js";
+import { flowStageByStatus, legacyDiscountCategory } from "./utils.js?v=2026.08.29";
 
 const STORAGE_KEY = "marcaflow-v1";
 
@@ -31,6 +31,12 @@ function load() {
 
 function save() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+// Substitui o workspace em memória preservando a referência exportada.
+function setData(next) {
+  for (const key of Object.keys(data)) delete data[key];
+  Object.assign(data, next);
 }
 
 function ensureCollections() {
@@ -70,4 +76,4 @@ function ensureCollections() {
 function client(id) { return data.clients.find((item) => item.id === id) || { name: "Cliente não informado" }; }
 function processById(id) { return data.processes.find((item) => item.id === id); }
 
-export { data, seed, STORAGE_KEY, iso, client, processById, load, save, ensureCollections };
+export { data, seed, STORAGE_KEY, iso, client, processById, load, save, setData, ensureCollections };

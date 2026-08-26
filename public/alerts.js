@@ -3,9 +3,9 @@
  * Notificações push, email e integração com Google Calendar
  */
 
-import { data, client, iso, save } from "./store.js";
-import { daysUntil, processRisk, legalRisk, riskLabels, formatDate } from "./business.js";
-import { escapeHtml } from "./utils.js";
+import { data, client, iso, save } from "./store.js?v=2026.08.29";
+import { daysUntil, processRisk, legalRisk, riskLabels, formatDate } from "./business.js?v=2026.08.29";
+import { escapeHtml } from "./utils.js?v=2026.08.29";
 
 const ALERT_THRESHOLDS = [55, 50, 45, 40, 30, 21, 14, 7, 5, 3, 2, 1, 0];
 const ALERT_STORAGE_KEY = "marcaflow-alerts-config";

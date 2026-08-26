@@ -3,9 +3,9 @@
  * Controle financeiro de processos e clientes
  */
 
-import { data, client, save } from "./store.js";
-import { escapeHtml, downloadJson } from "./utils.js";
-import { formatMoney } from "./business.js";
+import { data, client, save } from "./store.js?v=2026.08.29";
+import { escapeHtml, downloadJson } from "./utils.js?v=2026.08.29";
+import { formatMoney } from "./business.js?v=2026.08.29";
 
 const FINANCIAL_DATA_KEY = "marcaflow-financial-data";
 
