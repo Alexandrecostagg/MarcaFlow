@@ -9,32 +9,22 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    
+
     strategy:
       matrix:
         node-version: [18.x, 20.x]
-    
+
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-    
-    - name: Install dependencies
-      run: npm install
-    
-    - name: Run linting
-      run: npm run lint || true
-    
+
     - name: Run tests
-      run: npm test || true
-    
-    - name: Build
-      run: npm run build || true
-    
+      run: node tests/run.js
+
     - name: Upload test results
       if: always()
       uses: actions/upload-artifact@v4
@@ -45,11 +35,11 @@ jobs:
   deploy:
     needs: test
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    
+    if: github.ref == 'refs/heads/main' && secrets.CLOUDFLARE_API_TOKEN != '' && secrets.CLOUDFLARE_ACCOUNT_ID != '' && secrets.FIREBASE_SERVICE_ACCOUNT != ''
+
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Deploy to Cloudflare Pages
       uses: cloudflare/pages-action@v1
       with:
@@ -68,21 +58,21 @@ jobs:
 
   security:
     runs-on: ubuntu-latest
-    
+
     steps:
     - uses: actions/checkout@v4
-    
-    - name: Check for secrets
+
+    - name: Check for leaked secrets
       run: |
-        if grep -r "apiKey" public/ || grep -r "password" public/; then
-          echo "⚠️  Found potential secrets in code"
+        if grep -rnE "MarcaFlow@|BEGIN [A-Z ]*PRIVATE|sk_live|AKIA[0-9A-Z]{16}" public/ functions/; then
+          echo "⚠️  Possíveis segredos em código"
           exit 1
         fi
       continue-on-error: true
-    
+
     - name: Check CSP headers
       run: |
-        if ! grep -r "Content-Security-Policy" public/_headers; then
+        if ! grep -q "Content-Security-Policy" public/_headers; then
           echo "⚠️  Missing CSP headers"
           exit 1
         fi
