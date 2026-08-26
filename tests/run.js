@@ -1,8 +1,9 @@
 // tests/run.js — Script de teste Node.js para CI/CD
 // Testa a API real dos módulos ES atuais (store.js, business.js, utils.js).
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 // Mock do window e localStorage para Node.js
 global.window = {};
@@ -181,7 +182,7 @@ global.localStorage = {
   console.log('='.repeat(50));
 
   // Salvar resultados para CI/CD
-  const resultDir = path.join(__dirname, '..', 'test-results');
+  const resultDir = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'test-results');
   if (!fs.existsSync(resultDir)) {
     fs.mkdirSync(resultDir);
   }
