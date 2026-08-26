@@ -35,12 +35,13 @@ jobs:
   deploy:
     needs: test
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && secrets.CLOUDFLARE_API_TOKEN != '' && secrets.CLOUDFLARE_ACCOUNT_ID != '' && secrets.FIREBASE_SERVICE_ACCOUNT != ''
+    if: github.ref == 'refs/heads/main'
 
     steps:
     - uses: actions/checkout@v4
 
     - name: Deploy to Cloudflare Pages
+      if: secrets.CLOUDFLARE_API_TOKEN != '' && secrets.CLOUDFLARE_ACCOUNT_ID != ''
       uses: cloudflare/pages-action@v1
       with:
         apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -50,7 +51,8 @@ jobs:
         branch: main
 
     - name: Deploy Firestore Rules
-      uses: w9jds/firebase-action@v13
+      if: secrets.FIREBASE_SERVICE_ACCOUNT != ''
+      uses: w9jds/firebase-action@v13.35.1
       with:
         args: deploy --only firestore:rules --project marcaflow-inpi
       env:
