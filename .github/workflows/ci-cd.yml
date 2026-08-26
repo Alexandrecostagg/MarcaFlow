@@ -40,8 +40,31 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Verifica secrets Cloudflare
+      id: cf
+      env:
+        CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      run: |
+        if [ -n "$CF_TOKEN" ] && [ -n "$CF_ACCOUNT" ]; then
+          echo "ready=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "ready=false" >> "$GITHUB_OUTPUT"
+        fi
+
+    - name: Verifica service account Firebase
+      id: fb
+      env:
+        FIREBASE_SA: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+      run: |
+        if [ -n "$FIREBASE_SA" ]; then
+          echo "ready=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "ready=false" >> "$GITHUB_OUTPUT"
+        fi
+
     - name: Deploy to Cloudflare Pages
-      if: secrets.CLOUDFLARE_API_TOKEN != '' && secrets.CLOUDFLARE_ACCOUNT_ID != ''
+      if: steps.cf.outputs.ready == 'true'
       uses: cloudflare/pages-action@v1
       with:
         apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -51,7 +74,7 @@ jobs:
         branch: main
 
     - name: Deploy Firestore Rules
-      if: secrets.FIREBASE_SERVICE_ACCOUNT != ''
+      if: steps.fb.outputs.ready == 'true'
       uses: w9jds/firebase-action@v13.35.1
       with:
         args: deploy --only firestore:rules --project marcaflow-inpi
