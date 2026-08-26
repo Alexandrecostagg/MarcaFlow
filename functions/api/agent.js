@@ -49,6 +49,20 @@ const KNOWLEDGE = [
     text: "No exame de merito, o INPI avalia se a marca cumpre os requisitos legais e pode ou nao ser registrada. Podem ocorrer exigencias, suspensao temporaria, deferimento ou indeferimento."
   },
   {
+    id: "inpi-classificacao-2026",
+    source: "INPI - Classificação de Produtos e Serviços",
+    url: "https://www.gov.br/inpi/pt-br/servicos/marcas/classificacao-marcas",
+    title: "Classes, especificação e descrição livre",
+    text: "A Classificação de Nice possui 45 classes: produtos nas classes 1 a 34 e serviços nas classes 35 a 45. A seleção deve refletir os produtos e serviços efetivamente protegidos. Itens pré-aprovados no e-Marcas reduzem o risco de exigência; a especificação livre deve ser usada somente quando necessária e precisa pertencer a uma única classe."
+  },
+  {
+    id: "inpi-tabela-marcas-2025",
+    source: "INPI - Tabela de Retribuições de Marcas",
+    url: "https://www.gov.br/inpi/pt-br/servicos/marcas/NovaTabeladeRetribuiesINPI_MARCAS_Final_20_dez_25.pdf",
+    title: "Taxas por classe e descontos",
+    text: "Para o pedido de registro de marca por classe, a tabela vigente indicada prevê R$ 880 com especificação pré-aprovada ou R$ 1.720 com especificação livre. Para categorias elegíveis ao desconto de 50%, os valores são R$ 440 e R$ 860, respectivamente. A elegibilidade ao desconto depende da categoria do titular e deve ser confirmada no canal oficial. Custos de eventos processuais e de renovação são distintos do pedido inicial; a concessão e emissão do certificado do primeiro decênio estão isentas na tabela vigente indicada."
+  },
+  {
     id: "manual-marcas",
     source: "INPI - Manual de Marcas",
     url: "https://manualdemarcas.inpi.gov.br/projects/manual/wiki/Manual_de_Marcas",
@@ -66,10 +80,16 @@ const KNOWLEDGE = [
 
 const jsonHeaders = {
   "content-type": "application/json; charset=utf-8",
-  "cache-control": "no-store"
+  "cache-control": "no-store",
+  "x-content-type-options": "nosniff",
+  "x-frame-options": "DENY"
 };
 const FIREBASE_CERTS_URL = "https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com";
 const FIREBASE_PROJECT_ID = "marcaflow-inpi";
+
+const RATE_LIMIT_WINDOW_MS = 60000;
+const RATE_LIMIT_MAX = 20;
+const rateLimitStore = new Map();
 
 function json(payload, status = 200) {
   return new Response(JSON.stringify(payload), { status, headers: jsonHeaders });
@@ -123,6 +143,48 @@ async function verifyFirebaseToken(request) {
   return payload;
 }
 
+function checkRateLimit(userId) {
+  const now = Date.now();
+  const windowStart = now - RATE_LIMIT_WINDOW_MS;
+  const userEntries = rateLimitStore.get(userId) || [];
+  const validEntries = userEntries.filter(t => t > windowStart);
+  if (validEntries.length >= RATE_LIMIT_MAX) {
+    throw new Error("rate-limit");
+  }
+  validEntries.push(now);
+  rateLimitStore.set(userId, validEntries);
+  if (rateLimitStore.size > 1000) {
+    const entries = [...rateLimitStore.entries()].filter(([_, times]) => times.some(t => t > windowStart));
+    rateLimitStore.clear();
+    for (const [uid, times] of entries) rateLimitStore.set(uid, times);
+  }
+}
+
+function sanitizeText(value) {
+  return String(value || "")
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, "")
+    .replace(/<\/?script\b/gi, "")
+    .replace(/javascript:/gi, "")
+    .replace(/on\w+\s*=/gi, "")
+    .replace(/data:text\/html/gi, "")
+    .replace(/[`\\"']/g, "")
+    .replace(/\u0000-\u001F\u007F-\u009F/g, "")
+    .trim();
+}
+
+function sanitizeProcessData(process) {
+  if (!process || typeof process !== "object") return null;
+  const safe = {};
+  for (const [key, value] of Object.entries(process)) {
+    if (typeof value === "string") {
+      safe[key] = sanitizeText(value).slice(0, 500);
+    } else {
+      safe[key] = value;
+    }
+  }
+  return safe;
+}
+
 function tokenize(text) {
   return String(text || "")
     .normalize("NFD")
@@ -159,12 +221,7 @@ function processSummary(process) {
 }
 
 function extractText(response) {
-  if (response.output_text) return response.output_text;
-  return (response.output || [])
-    .flatMap((item) => item.content || [])
-    .map((content) => content.text || "")
-    .filter(Boolean)
-    .join("\n\n");
+  return String(response?.choices?.[0]?.message?.content || "").trim();
 }
 
 export async function onRequestPost(context) {
@@ -173,8 +230,12 @@ export async function onRequestPost(context) {
   const contentLength = Number(request.headers.get("content-length") || "0");
   if (contentLength > 12000) return json({ error: "Payload muito grande." }, 413);
   try {
-    await verifyFirebaseToken(request);
-  } catch {
+    const tokenPayload = await verifyFirebaseToken(request);
+    checkRateLimit(tokenPayload.sub);
+  } catch (error) {
+    if (error.message === "rate-limit") {
+      return json({ error: "Limite de requisições excedido. Aguarde 1 minuto.", fallback: true, sources: [] }, 429);
+    }
     return json({ error: "Autenticacao obrigatoria.", fallback: true, sources: [] }, 401);
   }
 
@@ -185,54 +246,68 @@ export async function onRequestPost(context) {
     return json({ error: "JSON invalido." }, 400);
   }
 
-  const question = String(payload.question || "").trim().slice(0, 1200);
-  if (question.length < 4) return json({ error: "Pergunta muito curta." }, 400);
+  const rawQuestion = String(payload.question || "").trim();
+  if (rawQuestion.length < 4) return json({ error: "Pergunta muito curta.", fallback: true, sources: [] }, 400);
+  const question = sanitizeText(rawQuestion).slice(0, 1200);
+  if (question.length < 4) return json({ error: "Pergunta vazia apos sanitizacao.", fallback: true, sources: [] }, 400);
+
+  const sanitizedProcess = sanitizeProcessData(payload.process || null);
 
   const sources = retrieveKnowledge(question);
-  if (!env.OPENAI_API_KEY) {
-    return json({ error: "OPENAI_API_KEY nao configurada.", fallback: true, sources }, 503);
+  if (!env.DEEPSEEK_API_KEY) {
+    return json({ error: "DEEPSEEK_API_KEY nao configurada.", fallback: true, sources }, 503);
   }
 
-  const model = env.OPENAI_MODEL || "gpt-5.4-mini";
-  const process = payload.process || null;
+  const model = env.DEEPSEEK_MODEL || "deepseek-v4-flash";
   const prompt = [
     "Pergunta do usuario:",
     question,
     "",
     "Processo selecionado no MarcaFlow:",
-    processSummary(process),
+    processSummary(sanitizedProcess),
     "",
     "Fontes recuperadas:",
     sources.map((item, index) => `[${index + 1}] ${item.title} (${item.source})\nURL: ${item.url}\n${item.text}`).join("\n\n")
   ].join("\n");
 
-  const openaiResponse = await fetch("https://api.openai.com/v1/responses", {
+  const deepseekResponse = await fetch("https://api.deepseek.com/chat/completions", {
     method: "POST",
     headers: {
-      authorization: `Bearer ${env.OPENAI_API_KEY}`,
+      authorization: `Bearer ${env.DEEPSEEK_API_KEY}`,
       "content-type": "application/json"
     },
     body: JSON.stringify({
       model,
-      instructions: [
-        "Voce e o Agente INPI do MarcaFlow, um assistente operacional para acompanhamento de marcas no INPI.",
-        "Responda em portugues do Brasil, de forma objetiva e pratica.",
-        "Use somente as fontes recuperadas e o contexto do processo informado.",
-        "Nao de parecer juridico definitivo. Sempre recomende conferir a RPI/PDF oficial e o Manual de Marcas vigente antes de cumprir prazo.",
-        "Estruture em: Resposta, Proximos passos, Fontes usadas."
-      ].join("\n"),
-      input: prompt,
-      max_output_tokens: 900
+      messages: [
+        {
+          role: "system",
+          content: [
+            "Voce e o Agente INPI do MarcaFlow, um assistente operacional para acompanhamento de marcas no INPI.",
+            "Responda em portugues do Brasil, de forma humana, clara e pratica; nao entregue um texto generico de manual.",
+            "Use somente as fontes recuperadas e o contexto do processo informado.",
+            "Quando a pergunta envolver classe, categoria, enquadramento, protecao ou custo: comece explicando que o enquadramento nasce da atividade real, nao do nome da marca. Se faltarem dados, conduza a conversa e peça: produtos/servicos atuais, se fabrica/vende/presta servico, canais de venda, expansao em 12-24 meses e perfil do titular para desconto. Diga que a entrega sera classes essenciais, classes de expansao e soma do custo por classe. Se houver dados suficientes, apresente classes candidatas, a justificativa curta de cada uma e a estimativa usando os valores recuperados; separe taxa oficial de honorarios e de eventos futuros.",
+            "Nao de parecer juridico definitivo. Sempre recomende conferir a RPI/PDF oficial e o Manual de Marcas vigente antes de cumprir prazo.",
+            "Estruture naturalmente com titulos curtos: O que vamos proteger, O que preciso confirmar, Estimativa inicial e Proximo passo."
+          ].join("\n")
+        },
+        { role: "user", content: prompt }
+      ],
+      thinking: { type: "disabled" },
+      max_tokens: 900,
+      stream: false
     })
   });
 
-  const result = await openaiResponse.json().catch(() => ({}));
-  if (!openaiResponse.ok) {
-    return json({ error: result.error?.message || "Falha ao chamar OpenAI.", fallback: true, sources }, openaiResponse.status);
+  const result = await deepseekResponse.json().catch(() => ({}));
+  if (!deepseekResponse.ok) {
+    return json({ error: result.error?.message || "Falha ao chamar DeepSeek.", fallback: true, sources }, deepseekResponse.status);
   }
 
+  const answer = extractText(result);
+  if (!answer) return json({ error: "DeepSeek nao retornou texto.", fallback: true, sources }, 502);
+
   return json({
-    answer: extractText(result),
+    answer,
     model,
     sources,
     fallback: false

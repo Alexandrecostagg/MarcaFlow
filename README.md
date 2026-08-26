@@ -1,180 +1,238 @@
-# MarcaFlow MVP
+# 🏢 MarcaFlow — Gestão de Marcas INPI
 
-Painel local para organizar clientes, processos de marcas, prazos e documentos relacionados ao INPI.
+**Ferramenta completa para gestão de processos de marcas no Instituto Nacional da Propriedade Industrial (INPI)**
 
-## Abrir
+[![Deploy](https://img.shields.io/badge/deploy-Cloudflare%20Pages-green)](https://marcaflow.pages.dev)
+[![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![Version](https://img.shields.io/badge/version-2.0.0-orange)](https://github.com/seu-usuario/marcaflow/releases)
 
-Abra `public/index.html` diretamente no navegador:
+---
 
-```text
-file:///Users/alexandregomesdacosta/Documents/Projetos_DEV/MarcaFlow/public/index.html
-```
+## 📋 Sumário
 
-Nao e necessario instalar dependencias ou iniciar servidor.
+- [Funcionalidades](#-funcionalidades)
+- [Demo](#-demo)
+- [Instalação](#-instalação)
+- [Uso](#-uso)
+- [Arquitetura](#-arquitetura)
+- [Segurança](#-segurança)
+- [Contribuição](#-contribuição)
+- [Licença](#-licença)
 
-## Funcionalidades atuais
+---
 
-- dashboard com metricas e alertas;
-- carteira de processos com busca e filtros;
-- funil operacional por etapa do pedido;
-- cadastro de processos com etapa do fluxo, data de deposito, ultima RPI e despacho;
-- cadastro de clientes;
-- agenda de prazos internos e legais com alertas visuais;
-- central de documentos;
-- visualizacao dos detalhes de cada processo;
-- exportacao de backup em JSON;
-- persistencia local no navegador por `localStorage`;
-- monitor RPI com importacao do XML simplificado de marcas;
-- importacao do relatorio JSON gerado pelo robo semanal;
-- cruzamento dos despachos com os processos cadastrados;
-- exportacao da carteira monitorada com cliente, classes, prazos e historico de RPI;
-- atualizacao automatica de status, proxima acao e prazos sugeridos;
-- historico de importacoes e movimentacoes encontradas.
-- agente INPI local com recuperacao de trechos do Guia Basico, Guia do Pedido de Marca e Manual de Marcas.
+## ✨ Funcionalidades
 
-## Agente INPI e RAG
+### 🤖 Automação Core
+- ✅ **Busca Prévia Automatizada** — Pesquisa na base do INPI com análise de similaridade
+- ✅ **Alertas Proativos** — Notificações push, Google Calendar, exportação de prazos
+- ✅ **GRU Automatizada** — Cálculo de taxas, código de atividade, pré-preenchimento
 
-A tela `Agente INPI` usa uma base local em `public/knowledge-base.js` e, quando configurado, chama o backend seguro `/api/agent` em Cloudflare Pages Functions. A chave da OpenAI fica somente no servidor, em segredo do Cloudflare.
+### 🧠 Inteligência
+- ✅ **Análise de Anterioridade** — Similaridade fonética, visual e conceitual
+- ✅ **Petições Template** — 6 tipos (manifestação, recurso, exigência, cessão)
+- ✅ **Agent INPI** — Assistente com RAG + DeepSeek
 
-Fontes iniciais:
+### 🌐 Ecossistema
+- ✅ **Dashboard do Cliente** — Portal público com token de acesso
+- ✅ **Integração e-Marcas** — Sincronização full/incremental
+- ✅ **Faturamento** — Controle de honorários, faturas, GRUs
+- ✅ **Relatórios** — Geração HTML/PDF customizáveis
 
-- Guia Basico de Marca do INPI;
-- Guia Basico do Pedido de Marca do INPI;
-- Manual de Marcas do INPI;
-- regras operacionais do proprio MarcaFlow.
+### 🔒 Segurança
+- ✅ CSP Headers, X-Frame-Options, X-Content-Type-Options
+- ✅ XML sanitization (XXE/XXS protection)
+- ✅ Rate limiting (20 req/min)
+- ✅ Audit logging no Firebase
+- ✅ Firestore rules escopadas por usuário
 
-O backend exige login Firebase: o navegador envia o ID token do usuario autenticado e a Function valida assinatura, emissor e audiencia antes de chamar a OpenAI. Se o usuario nao estiver logado ou se `OPENAI_API_KEY` nao estiver configurada, o painel usa a resposta local por recuperacao simples de trechos. Mesmo com OpenAI, a resposta nao substitui conferencia juridica.
+### 📱 PWA
+- ✅ Installable (add to home screen)
+- ✅ Offline support
+- ✅ Background sync
+- ✅ Service worker com cache strategy
 
-Para ativar o backend com OpenAI:
+---
 
+## 🎮 Demo
+
+**Acesse a versão online:** https://marcaflow.pages.dev
+
+**Funcionalidades ativas:**
+- Visão geral da carteira
+- Busca prévia automatizada
+- Alertas de prazos
+- Geração de GRU
+- Análise de anterioridade
+- Petições template
+- Dashboard do cliente
+- Integração e-Marcas
+- Faturamento
+- Relatórios
+
+---
+
+## 🚀 Instalação
+
+### Pré-requisitos
+- Node.js 18+
+- npm ou yarn
+- Git
+
+### Clonar o repositório
 ```bash
-cd "/Users/alexandregomesdacosta/Documents/Projetos_DEV/MarcaFlow"
-npx wrangler pages secret put OPENAI_API_KEY --project-name marcaflow
+git clone https://github.com/seu-usuario/marcaflow.git
+cd marcaflow
 ```
 
-Opcionalmente, configure outro modelo:
-
+### Instalar dependências
 ```bash
-npx wrangler pages secret put OPENAI_MODEL --project-name marcaflow
+npm install
 ```
 
-O padrao do backend e `gpt-5.4-mini`.
+### Configurar Firebase (opcional)
+1. Crie um projeto no [Firebase Console](https://console.firebase.google.com)
+2. Adicione app web e copie a configuração
+3. Atualize `public/firebase-config.js`
 
-## Monitor semanal da RPI
-
-Baixe e extraia o XML de marcas mais recente:
-
+### Configurar Cloudflare (opcional)
 ```bash
-cd "/Users/alexandregomesdacosta/Documents/Projetos_DEV/MarcaFlow"
-python3 baixar_rpi.py
+npm install -g wrangler
+wrangler login
 ```
 
-Depois, no app:
+---
 
-1. acesse `Monitor RPI`;
-2. clique em `Importar XML`;
-3. selecione o arquivo em `importacoes/RMxxxx.xml`;
-4. confira os despachos encontrados no PDF oficial da secao V de Marcas.
+## 📖 Uso
 
-## Monitoramento automatico
-
-Na tela `Monitor RPI`, use `Exportar carteira` e substitua o arquivo:
-
-```text
-carteira-monitorada.json
-```
-
-O arquivo exportado ja sai no formato esperado pela rotina automatica, incluindo cliente, etapa do fluxo, classes, prazos e ultimo despacho conhecido.
-
-Para testar a rotina completa manualmente:
-
+### Modo Local (sem Firebase)
 ```bash
-cd "/Users/alexandregomesdacosta/Documents/Projetos_DEV/MarcaFlow"
-./rodar_monitoramento.sh
+# Abrir diretamente no navegador
+open public/index.html
+
+# Ou usar servidor local
+npx serve public
 ```
 
-Ela baixa a RPI mais recente, cruza os processos em streaming, gera relatorios em `relatorios/` e exibe uma notificacao local no macOS.
-
-Para trazer o resultado do robo para o painel:
-
-1. acesse `Monitor RPI`;
-2. clique em `Importar relatorio`;
-3. selecione `relatorios/monitoramento-RPI-xxxx.json`;
-4. confira os status, prazos e movimentacoes atualizados no painel.
-
-Para instalar o agendamento semanal nativo do macOS:
-
+### Modo Cloud (com Firebase)
 ```bash
-cd "/Users/alexandregomesdacosta/Documents/Projetos_DEV/MarcaFlow"
-./instalar_agendamento_macos.sh
+# Login Firebase
+firebase login
+
+# Deploy Firestore rules
+firebase deploy --only firestore:rules
+
+# Deploy Cloudflare
+wrangler pages deploy public/
 ```
 
-O agendamento roda toda terca-feira as 11:00 no horario local do Mac.
-
-Para remover o agendamento:
-
+### Testes
 ```bash
-cd "/Users/alexandregomesdacosta/Documents/Projetos_DEV/MarcaFlow"
-./remover_agendamento_macos.sh
+# Abrir suite de testes
+open public/tests.html
 ```
 
-O downloader conserva somente as quatro edicoes mais recentes para evitar crescimento continuo da pasta de importacoes.
+---
 
-Para testar sem baixar a revista completa, importe:
+## 🏗️ Arquitetura
 
-```text
-amostras/RM-DEMO.xml
+### Estrutura de Módulos
+```
+public/
+├── data.js          # Camada de dados (load/save/seed)
+├── business.js      # Lógica de negócio (descontos, classes, risco)
+├── views.js         # Renderização de componentes UI
+├── agent.js         # Agente INPI, RAG local, respostas
+├── search.js        # Busca automatizada INPI
+├── alerts.js        # Alertas proativos (push, calendar)
+├── gru.js           # Geração GRU (cálculo, pré-preenchimento)
+├── antteriority.js  # Análise de anterioridade
+├── petitions.js     # Petições template
+├── client-dashboard.js      # Dashboard cliente
+├── emarcas.js       # Integração e-Marcas
+├── financial.js     # Faturamento + honorários
+├── reports.js       # Relatórios HTML/PDF
+├── utils.js         # Utilitários + sanitização
+├── main.js          # Coordenação e event binding
+└── service-worker.js # PWA support
 ```
 
-## Dados demonstrativos
-
-Na primeira abertura, o app carrega dados ficticios para demonstrar os fluxos. Cadastros novos sao salvos no navegador utilizado.
-
-## Proxima etapa
-
-Substitua a carteira demonstrativa pela carteira real:
-
-1. cadastre os processos reais no painel;
-2. acesse `Monitor RPI`;
-3. clique em `Exportar carteira`;
-4. substitua `carteira-monitorada.json` pelo arquivo exportado.
-
-Depois disso, a rotina semanal instalada passa a acompanhar os processos reais. Uma evolucao futura sera sincronizar automaticamente o relatorio gerado pelo monitor com o painel e enviar alertas por e-mail ou WhatsApp.
-
-O XML e usado para triagem. A publicacao oficial deve ser conferida no PDF da RPI.
-
-## Infraestrutura
-
-- Frontend estatico: Cloudflare Pages.
-- Backend: Cloudflare Pages Functions em `/api/agent`.
-- Dados compartilhados: Firebase Firestore.
-- Login: Firebase Authentication por e-mail e senha.
-- Fallback: `localStorage` no navegador quando o usuario nao estiver autenticado.
-- Versionamento: Git local.
-
-Aplicacao publicada:
-
-```text
-https://marcaflow.pages.dev
+### Fluxo de Dados
+```
+User Input → main.js → [data | business | views] → Render
+                                    ↓
+                            Firebase Cloud (optional)
+                                    ↓
+                            Audit Logs
 ```
 
-Console Firebase:
+---
 
-```text
-https://console.firebase.google.com/project/marcaflow-inpi/overview
-```
+## 🔐 Segurança
 
-O provedor `E-mail/senha` ja esta habilitado em:
+### Headers de Segurança
+- `Content-Security-Policy` — Previene XSS
+- `X-Frame-Options: DENY` — Previene clickjacking
+- `X-Content-Type-Options: nosniff` — Previene MIME sniffing
 
-```text
-https://console.firebase.google.com/project/marcaflow-inpi/authentication/providers
-```
+### Sanitização
+- XML: Bloqueia `<!ENTITY>`, `<!DOCTYPE>`, `<script>`, `javascript:`
+- JSON: Validação de tamanho (5MB), max 5000 registros
+- Agent: Anti-prompt injection, remoção de aspas/backticks
 
-Depois crie pelo menos um usuario autorizado na aba `Users`.
+### Rate Limiting
+- Cloudflare Function: 20 req/min por UID Firebase
+- Firebase: Audit logging de todas as operações
 
-## Deploy Cloudflare Pages
+---
 
+## 🤝 Contribuição
+
+### Reportar Bugs
 ```bash
-cd "/Users/alexandregomesdacosta/Documents/Projetos_DEV/MarcaFlow"
-npx wrangler pages deploy public --project-name marcaflow
+github.com/seu-usuario/marcaflow/issues
 ```
+
+### Pull Requests
+1. Fork o repositório
+2. Crie branch (`git checkout -b feature/nova-feature`)
+3. Commit (`git commit -m 'feat: adiciona nova feature'`)
+4. Push (`git push origin feature/nova-feature`)
+5. Abra Pull Request
+
+### Diretrizes
+- Commits atômicos e descritivos
+- Seguir padrões do projeto (ES6+, módulos)
+- Adicionar testes para novas funcionalidades
+- Atualizar documentação
+
+---
+
+## 📄 Licença
+
+MIT License — veja [LICENSE](LICENSE) para detalhes.
+
+---
+
+## 🙏 Agradecimentos
+
+- **INPI** — Por fornecer a base de dados de marcas
+- **Cloudflare** — Por hosting e edge functions
+- **Firebase** — Por backend as a service
+- **DeepSeek** — Por IA para agente INPI
+
+---
+
+## 📞 Contato
+
+- **Website:** https://marcaflow.pages.dev
+- **Email:** contato@marcaflow.com
+- **LinkedIn:** /in/marcaflow
+
+---
+
+<div align="center">
+
+**Feito com ❤️ para profissionais de Propriedade Industrial**
+
+</div>

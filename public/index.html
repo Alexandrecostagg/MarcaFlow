@@ -3,10 +3,19 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MarcaFlow | Gestão INPI</title>
+    <meta name="description" content="Ferramenta completa para gestão de processos de marcas no INPI" />
+    <meta name="theme-color" content="#126b52" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="MarcaFlow" />
+    <link rel="manifest" href="./manifest.json?v=2026" />
+    <link rel="icon" type="image/svg+xml" sizes="192x192" href="./assets/icon-192.svg" />
+    <link rel="icon" type="image/svg+xml" sizes="512x512" href="./assets/icon-512.svg" />
     <link rel="stylesheet" href="./styles.css" />
+    <title>MarcaFlow | Gestão INPI</title>
   </head>
   <body>
+    <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Menu">☰</button>
     <aside class="sidebar">
       <div class="brand">
         <div class="brand-mark">M</div>
@@ -16,28 +25,55 @@
         </div>
       </div>
       <nav class="nav" aria-label="Navegação principal">
-        <button class="nav-item active" data-view="dashboard">
+        <button class="nav-item active" data-view="dashboard" aria-label="Visão geral da carteira">
           <span class="icon">⌂</span><span>Visão geral</span>
         </button>
-        <button class="nav-item" data-view="processes">
+        <button class="nav-item" data-view="diagnosis" aria-label="Diagnóstico de marcas">
+          <span class="icon">✦</span><span>Diagnóstico</span>
+        </button>
+        <button class="nav-item" data-view="availability" aria-label="Verificar disponibilidade">
+          <span class="icon">⌕</span><span>Disponibilidade</span>
+        </button>
+        <button class="nav-item" data-view="search" aria-label="Busca prévia automatizada">
+          <span class="icon">⌂</span><span>Busca Prévia</span>
+        </button>
+        <button class="nav-item" data-view="alerts" aria-label="Alertas de prazos">
+          <span class="icon">⚑</span><span>Alertas</span>
+        </button>
+        <button class="nav-item" data-view="gru" aria-label="Gerar GRU para pagamento">
+          <span class="icon">🧾</span><span>GRU</span>
+        </button>
+        <button class="nav-item" data-view="antteriority" aria-label="Análise de anterioridade">
+          <span class="icon">⚖️</span><span>Anterioridade</span>
+        </button>
+        <button class="nav-item" data-view="petitions" aria-label="Petições template">
+          <span class="icon">📄</span><span>Petições</span>
+        </button>
+        <button class="nav-item" data-view="emarcas" aria-label="Integração e-Marcas">
+          <span class="icon">🔗</span><span>e-Marcas</span>
+        </button>
+        <button class="nav-item" data-view="financial" aria-label="Controle financeiro">
+          <span class="icon">💰</span><span>Financeiro</span>
+        </button>
+        <button class="nav-item" data-view="processes" aria-label="Processos de marcas">
           <span class="icon">▤</span><span>Processos</span>
         </button>
-        <button class="nav-item" data-view="funnel">
+        <button class="nav-item" data-view="funnel" aria-label="Funil de conversão">
           <span class="icon">▥</span><span>Funil</span>
         </button>
-        <button class="nav-item" data-view="clients">
+        <button class="nav-item" data-view="clients" aria-label="Gestão de clientes">
           <span class="icon">♙</span><span>Clientes</span>
         </button>
-        <button class="nav-item" data-view="deadlines">
+        <button class="nav-item" data-view="deadlines" aria-label="Agenda de prazos">
           <span class="icon">◷</span><span>Agenda</span>
         </button>
-        <button class="nav-item" data-view="documents">
+        <button class="nav-item" data-view="documents" aria-label="Documentos">
           <span class="icon">▧</span><span>Documentos</span>
         </button>
-        <button class="nav-item" data-view="rpi">
+        <button class="nav-item" data-view="rpi" aria-label="Monitor RPI">
           <span class="icon">↻</span><span>Monitor RPI</span>
         </button>
-        <button class="nav-item" data-view="agent">
+        <button class="nav-item" data-view="agent" aria-label="Agente INPI assistente">
           <span class="icon">◇</span><span>Agente INPI</span>
         </button>
       </nav>
@@ -59,11 +95,11 @@
         <div class="topbar-actions">
           <label class="search">
             <span>⌕</span>
-            <input id="global-search" type="search" placeholder="Buscar marca, cliente ou processo" />
+            <input id="global-search" type="search" placeholder="Buscar marca, cliente ou processo" aria-label="Buscar marca, cliente ou processo" />
           </label>
-          <button class="secondary-button" id="cloud-auth-button" title="Entrar para sincronizar dados"><span class="cloud-dot"></span><span id="cloud-auth-label">Modo local</span></button>
-          <button class="icon-button" id="notification-button" title="Ver alertas">♧<span id="alert-count">0</span></button>
-          <button class="primary-button" id="open-process-modal"><span>＋</span>Novo processo</button>
+          <button class="secondary-button" id="cloud-auth-button" aria-label="Entrar para sincronizar dados"><span class="cloud-dot"></span><span id="cloud-auth-label">Modo local</span></button>
+          <button class="icon-button" id="notification-button" aria-label="Ver alertas"><span id="alert-count">0</span></button>
+          <button class="primary-button" id="open-process-modal" aria-label="Novo processo"><span>＋</span>Novo processo</button>
         </div>
       </header>
 
@@ -77,34 +113,42 @@
           <button class="close-button" type="button" data-close="process-modal" title="Fechar">×</button>
         </div>
         <div class="form-grid">
-          <label><span>Marca</span><input required name="brand" placeholder="Ex.: Aurora" /></label>
-          <label><span>Cliente</span><select required name="clientId" id="process-client-select"></select></label>
-          <label><span>Número do processo</span><input name="number" placeholder="Ex.: 927845610" /></label>
-          <label><span>Classe(s)</span><input required name="classes" placeholder="Ex.: 25, 35" /></label>
+          <label><span>Marca</span><input required name="brand" placeholder="Como consta no pedido INPI" aria-label="Nome da marca" /></label>
+          <label><span>Cliente</span><select required name="clientId" id="process-client-select" aria-label="Selecione o cliente"></select></label>
+          <label><span>Número do processo</span><input name="number" placeholder="Ex.: 927845610" aria-label="Número do processo" /></label>
+          <label><span>Classe(s)</span><input required name="classes" placeholder="Ex.: 25, 35" aria-label="Classes de Nice" /></label>
+          <label><span>Natureza</span><select name="nature" aria-label="Natureza da marca"><option>Produto</option><option>Serviço</option><option>Produto e serviço</option></select></label>
           <label><span>Etapa do fluxo</span>
-            <select name="flowStage">
+            <select name="flowStage" aria-label="Etapa do fluxo">
               <option>Busca prévia</option><option>Depósito</option><option>Publicação</option><option>Exame</option><option>Oposição</option><option>Recurso</option><option>Concessão</option><option>Registro</option><option>Renovação</option>
             </select>
           </label>
-          <label><span>Data de depósito</span><input name="filingDate" type="date" /></label>
+          <label><span>Data de depósito</span><input name="filingDate" type="date" aria-label="Data de depósito" /></label>
           <label><span>Apresentação</span>
-            <select name="presentation">
+            <select name="presentation" aria-label="Tipo de apresentação">
               <option>Mista</option><option>Nominativa</option><option>Figurativa</option><option>Tridimensional</option>
             </select>
           </label>
           <label><span>Status</span>
-            <select name="status">
+            <select name="status" aria-label="Status do processo">
               <option>Preparação</option><option>Protocolado</option><option>Publicado na RPI</option><option>Em exame</option><option>Deferido</option><option>Registrado</option><option>Com exigência</option><option>Com oposição</option><option>Indeferido</option>
             </select>
           </label>
-          <label><span>Responsável</span><input name="owner" value="Alexandre" /></label>
-          <label><span>Próxima ação</span><input required name="nextAction" placeholder="Ex.: Emitir GRU" /></label>
-          <label><span>Última RPI</span><input name="lastRpi" placeholder="Ex.: RPI 2891" /></label>
-          <label><span>Código do despacho</span><input name="lastDispatchCode" placeholder="Ex.: 003" /></label>
-          <label><span>Prazo legal</span><input name="legalDeadline" type="date" /></label>
-          <label><span>Prazo interno</span><input name="internalDeadline" type="date" /></label>
+          <label><span>Responsável</span><input name="owner" placeholder="Nome do responsável pelo processo" aria-label="Responsável pelo processo" /></label>
+          <label><span>Próxima ação</span><input required name="nextAction" placeholder="Ex.: Emitir GRU" aria-label="Próxima ação" /></label>
+          <label><span>Última RPI</span><input name="lastRpi" placeholder="Ex.: RPI 2891" aria-label="Última RPI" /></label>
+          <label><span>Código do despacho</span><input name="lastDispatchCode" placeholder="Ex.: 003" aria-label="Código do despacho" /></label>
+          <label><span>Prazo legal</span><input name="legalDeadline" type="date" aria-label="Prazo legal" /></label>
+          <label><span>Prazo interno</span><input name="internalDeadline" type="date" aria-label="Prazo interno" /></label>
         </div>
-        <label class="full-field"><span>Observações</span><textarea name="notes" rows="3" placeholder="Riscos, pendências e contexto do caso"></textarea></label>
+        <label class="full-field"><span>Produtos e serviços / especificação</span><textarea name="specification" rows="2" placeholder="Descreva o que a marca identifica em cada classe, preferencialmente com os termos aprovados pelo INPI." aria-label="Especificação dos produtos e serviços"></textarea></label>
+        <div class="form-grid">
+          <label><span>Canais de venda</span><input name="salesChannels" placeholder="Ex.: loja física, e-commerce" aria-label="Canais de venda" /></label>
+          <label><span>Área de atuação</span><input name="geographicScope" placeholder="Ex.: Brasil, Pará" aria-label="Área de atuação" /></label>
+          <label><span>Logo / arquivo</span><input name="logoReference" placeholder="Link ou referência do arquivo" aria-label="Referência do logo" /></label>
+          <label><span>Risco de anterioridade</span><select name="priorRisk" aria-label="Risco de anterioridade"><option>Não avaliado</option><option>Baixo</option><option>Médio</option><option>Alto</option></select></label>
+        </div>
+        <label class="full-field"><span>Observações</span><textarea name="notes" rows="3" placeholder="Riscos, pendências e contexto do caso" aria-label="Observações"></textarea></label>
         <div class="dialog-actions">
           <button type="button" data-close="process-modal" class="secondary-button">Cancelar</button>
           <button type="submit" value="default" class="primary-button">Salvar processo</button>
@@ -119,12 +163,18 @@
           <button class="close-button" type="button" data-close="client-modal" title="Fechar">×</button>
         </div>
         <div class="form-grid">
-          <label><span>Nome / razão social</span><input required name="name" /></label>
-          <label><span>CPF / CNPJ</span><input required name="document" /></label>
-          <label><span>E-mail</span><input name="email" type="email" /></label>
-          <label><span>Telefone</span><input name="phone" /></label>
-          <label><span>Perfil</span><select name="profile"><option>MEI</option><option>ME</option><option>EPP</option><option>Pessoa física</option><option>Empresa</option></select></label>
-          <label><span>Responsável</span><input name="contact" /></label>
+          <label><span>Nome / razão social</span><input required name="name" aria-label="Nome ou razão social" /></label>
+          <label><span>CPF / CNPJ</span><input required name="document" aria-label="CPF ou CNPJ" /></label>
+          <label><span>E-mail</span><input name="email" type="email" aria-label="E-mail" /></label>
+          <label><span>Telefone</span><input name="phone" aria-label="Telefone" /></label>
+          <label><span>Perfil</span><select name="profile" aria-label="Perfil do cliente"><option>MEI</option><option>ME</option><option>EPP</option><option>Pessoa física</option><option>Empresa</option><option>Entidade sem fins lucrativos</option><option>Órgão público</option></select></label>
+          <label><span>Responsável</span><input name="contact" aria-label="Responsável" /></label>
+          <label><span>Natureza jurídica</span><input name="legalNature" placeholder="Ex.: Sociedade limitada" aria-label="Natureza jurídica" /></label>
+          <label><span>Atividade compatível</span><input name="businessActivity" placeholder="CNAE ou atividade efetivamente exercida" aria-label="Atividade compatível" /></label>
+          <label><span>Enquadramento de desconto INPI</span><select name="discountCategory" aria-label="Enquadramento de desconto INPI"><option value="a_confirmar">A confirmar</option><option value="pessoa_natural">Pessoa natural</option><option value="mei">MEI</option><option value="microempresa">Microempresa (ME)</option><option value="epp">Empresa de Pequeno Porte (EPP)</option><option value="empresa_simples_inovacao">Empresa simples de inovação</option><option value="ict">ICT</option><option value="sem_fins_lucrativos">Entidade sem fins lucrativos</option><option value="orgao_publico">Órgão público nacional</option><option value="hipossuficiente">Pessoa física hipossuficiente</option><option value="pcd">Pessoa com deficiência (PcD)</option><option value="nao_elegivel">Não elegível</option></select></label>
+          <label><span>Pessoa natural sem empresa no mesmo ramo?</span><select name="naturalPersonNoSameSectorParticipation" aria-label="Pessoa natural sem empresa no mesmo ramo"><option value="">Não se aplica / não informado</option><option>Sim</option><option>Não</option></select></label>
+          <label><span>Cotitulares também são elegíveis?</span><select name="coHoldersEligible" aria-label="Cotitulares elegíveis"><option>Não se aplica</option><option>Sim</option><option>Não</option><option>A confirmar</option></select></label>
+          <label><span>Comprovante / validação</span><input name="discountEvidence" placeholder="Ex.: CCMEI, declaração, documento" aria-label="Comprovante de validação" /></label>
         </div>
         <div class="dialog-actions">
           <button type="button" data-close="client-modal" class="secondary-button">Cancelar</button>
@@ -144,8 +194,8 @@
           <button class="close-button" type="button" data-close="login-modal" title="Fechar">×</button>
         </div>
         <p class="form-intro">Use sua conta autorizada para carregar e salvar a carteira compartilhada no Firebase.</p>
-        <label><span>E-mail</span><input required name="email" type="email" autocomplete="email" /></label>
-        <label><span>Senha</span><input required name="password" type="password" autocomplete="current-password" /></label>
+        <label><span>E-mail</span><input required name="email" type="email" autocomplete="email" aria-label="E-mail para login" /></label>
+        <label><span>Senha</span><input required name="password" type="password" autocomplete="current-password" aria-label="Senha para login" /></label>
         <p class="form-error" id="login-error"></p>
         <div class="dialog-actions">
           <button type="button" data-close="login-modal" class="secondary-button">Cancelar</button>
@@ -156,8 +206,26 @@
 
     <input id="rpi-file-input" type="file" accept=".xml,text/xml,application/xml" hidden />
     <input id="monitor-report-input" type="file" accept=".json,application/json" hidden />
-    <script type="module" src="./firebase-service.js"></script>
-    <script src="./knowledge-base.js"></script>
-    <script src="./app.js"></script>
+    <input id="portfolio-import-input" type="file" accept=".json,application/json,.csv,text/csv" hidden />
+    <script type="module" src="./firebase-service.js?v=2026.08.26"></script>
+    <script src="./knowledge-base.js?v=2026.08.26"></script>
+    <script type="module" src="./utils.js?v=2026.08.26"></script>
+    <script type="module" src="./store.js?v=2026.08.26"></script>
+    <script type="module" src="./business.js?v=2026.08.26"></script>
+    <script type="module" src="./views.js?v=2026.08.26"></script>
+    <script type="module" src="./agent.js?v=2026.08.26"></script>
+    <script type="module" src="./search.js?v=2026.08.26"></script>
+    <script type="module" src="./alerts.js?v=2026.08.26"></script>
+    <script type="module" src="./gru.js?v=2026.08.26"></script>
+    <script type="module" src="./antteriority.js?v=2026.08.26"></script>
+    <script type="module" src="./petitions.js?v=2026.08.26"></script>
+    <script type="module" src="./emarcas.js?v=2026.08.26"></script>
+    <script type="module" src="./financial.js?v=2026.08.26"></script>
+    <script type="module" src="./reports.js?v=2026.08.26"></script>
+    <script type="module" src="./imports.js?v=2026.08.26"></script>
+    <script type="module" src="./a11y.js?v=2026.08.26"></script>
+    <script type="module" src="./analytics.js?v=2026.08.26"></script>
+    <script type="module" src="./backup.js?v=2026.08.26"></script>
+    <script type="module" src="./main.js?v=2026.08.26"></script>
   </body>
 </html>

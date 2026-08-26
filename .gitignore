@@ -1,8 +1,12 @@
 importacoes/*
 !importacoes/.gitkeep
+!importacoes/INSTRUCOES-COLETA-CARTEIRA.md
+!importacoes/modelo-carteira-marcas.csv
 relatorios/*
 !relatorios/.gitkeep
+test-results/
 .DS_Store
 .firebase/
 pglite-debug.log
 .wrangler/
+node_modules/

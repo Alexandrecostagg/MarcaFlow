@@ -49,6 +49,20 @@ window.marcaFlowKnowledge = [
     text: "No exame de merito, o INPI avalia se a marca cumpre os requisitos legais e pode ou nao ser registrada. Podem ocorrer exigencias, suspensao temporaria, deferimento ou indeferimento."
   },
   {
+    id: "inpi-classificacao-2026",
+    source: "INPI - Classificação de Produtos e Serviços",
+    url: "https://www.gov.br/inpi/pt-br/servicos/marcas/classificacao-marcas",
+    title: "Classes, especificação e descrição livre",
+    text: "A Classificação de Nice possui 45 classes: produtos nas classes 1 a 34 e serviços nas classes 35 a 45. A seleção deve refletir os produtos e serviços efetivamente protegidos. Itens pré-aprovados no e-Marcas reduzem o risco de exigência; a especificação livre deve ser usada somente quando necessária e precisa pertencer a uma única classe."
+  },
+  {
+    id: "inpi-tabela-marcas-2025",
+    source: "INPI - Tabela de Retribuições de Marcas",
+    url: "https://www.gov.br/inpi/pt-br/servicos/marcas/NovaTabeladeRetribuiesINPI_MARCAS_Final_20_dez_25.pdf",
+    title: "Taxas por classe e descontos",
+    text: "Para o pedido de registro de marca por classe, a tabela vigente indicada prevê R$ 880 com especificação pré-aprovada ou R$ 1.720 com especificação livre. Para categorias elegíveis ao desconto de 50%, os valores são R$ 440 e R$ 860, respectivamente. A elegibilidade ao desconto depende da categoria do titular e deve ser confirmada no canal oficial. Custos de eventos processuais e de renovação são distintos do pedido inicial; a concessão e emissão do certificado do primeiro decênio estão isentas na tabela vigente indicada."
+  },
+  {
     id: "manual-marcas",
     source: "INPI - Manual de Marcas",
     url: "https://manualdemarcas.inpi.gov.br/projects/manual/wiki/Manual_de_Marcas",

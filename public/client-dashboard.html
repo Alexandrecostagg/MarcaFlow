@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MarcaFlow - Dashboard do Cliente</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, -apple-system, sans-serif; background: #f5f7f6; min-height: 100vh; }
+    .container { max-width: 900px; margin: 0 auto; padding: 20px; }
+    .header { text-align: center; padding: 30px 0; }
+    .header h1 { color: #126b52; font-size: 28px; margin-bottom: 5px; }
+    .header p { color: #66736e; font-size: 14px; }
+    .card { background: white; border-radius: 12px; padding: 25px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    .card h2 { color: #1d2925; margin-bottom: 15px; font-size: 20px; }
+    .card h3 { color: #1d2925; margin-bottom: 15px; font-size: 16px; }
+    .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px; }
+    .info-item { font-size: 13px; }
+    .info-item strong { color: #66736e; display: block; margin-bottom: 3px; }
+    .badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+    .badge.green { background: #e5f4ed; color: #126b52; }
+    .badge.blue { background: #e9f2f8; color: #2e638d; }
+    .badge.amber { background: #fff3d8; color: #a9650b; }
+    .badge.red { background: #fbe9e6; color: #a63b34; }
+    .badge.gray { background: #edf1ef; color: #59645f; }
+    .process-card { border: 1px solid #dce5e1; border-radius: 8px; padding: 18px; margin-bottom: 12px; }
+    .process-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px; }
+    .process-header h4 { color: #1d2925; margin: 0; font-size: 16px; }
+    .process-header p { color: #66736e; font-size: 12px; margin: 4px 0 0; }
+    .process-details { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; font-size: 13px; color: #66736e; }
+    .alert-item { padding: 12px; border-left: 4px solid; border-radius: 4px; margin-bottom: 8px; background: #fafafa; }
+    .alert-item.overdue { border-color: #a63b34; background: #fbe9e6; }
+    .alert-item.today { border-color: #a63b34; background: #fbe9e6; }
+    .alert-item.critical { border-color: #a63b34; background: #fbe9e6; }
+    .alert-item.warning { border-color: #a9650b; background: #fff3d8; }
+    .footer { text-align: center; padding: 30px 0; color: #66736e; font-size: 12px; }
+    .empty-state { text-align: center; padding: 40px 20px; color: #66736e; }
+    .loading { text-align: center; padding: 40px; color: #66736e; }
+    @media (max-width: 600px) {
+      .info-grid { grid-template-columns: 1fr; }
+      .process-details { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Ⓜ MarcaFlow</h1>
+      <p>Acompanhamento de Processo</p>
+    </div>
+    
+    <div id="content" class="loading">
+      Carregando...
+    </div>
+    
+    <div class="footer">
+      <p>MarcaFlow - Gestão de Propriedade Industrial</p>
+      <p id="update-time"></p>
+    </div>
+  </div>
+
+  <script>
+    // Configuração do Firebase (mesma do app principal)
+    const firebaseConfig = {
+      projectId: "marcaflow-inpi",
+      appId: "1:616435298398:web:dca1d4e226201648f5c4cf",
+      storageBucket: "marcaflow-inpi.firebasestorage.app",
+      apiKey: "AIzaSyAAo01kH91tZd-LRUzY5f7DJ-genazHDI8",
+      authDomain: "marcaflow-inpi.firebaseapp.com",
+      messagingSenderId: "616435298398"
+    };
+
+    // Estado da aplicação
+    let data = { clients: [], processes: [], movements: [], imports: [] };
+    let currentClient = null;
+    let clientProcesses = [];
+    let token = null;
+
+    // Utilitários
+    const escapeHtml = (value) => String(value || "").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" })[char]);
+    
+    const today = new Date();
+    const iso = (offset = 0) => {
+      const date = new Date(today);
+      date.setDate(date.getDate() + offset);
+      return date.toISOString().slice(0, 10);
+    };
+
+    const formatDate = (value) => {
+      if (!value) return "Sem prazo";
+      return new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short", year: "numeric" }).format(new Date(`${value}T12:00:00`));
+    };
+
+    const daysUntil = (value) => {
+      if (!value) return Infinity;
+      const end = new Date(`${value}T12:00:00`);
+      const start = new Date(`${iso()}T12:00:00`);
+      return Math.ceil((end - start) / 86400000);
+    };
+
+    const statusTone = (status) => {
+      if (["Registrado", "Deferido"].includes(status)) return "green";
+      if (["Protocolado", "Publicado na RPI", "Em exame"].includes(status)) return "blue";
+      if (["Com exigência", "Preparação"].includes(status)) return "amber";
+      if (["Com oposição", "Indeferido"].includes(status)) return "red";
+      return "gray";
+    };
+
+    const processRisk = (item) => {
+      const days = daysUntil(item.internalDeadline);
+      if (days < 0) return "overdue";
+      if (days === 0) return "today";
+      if (days <= 2) return "critical";
+      if (days <= 7) return "warning";
+      return "ok";
+    };
+
+    const legalRisk = (item) => {
+      const days = daysUntil(item.legalDeadline);
+      if (days < 0) return "overdue";
+      if (days <= 2) return "critical";
+      if (days <= 7) return "warning";
+      return "ok";
+    };
+
+    // Carrega dados do Firebase
+    async function loadWorkspace() {
+      try {
+        // Simula carregamento de dados (em produção, usaria Firebase)
+        // Para demo, usa dados mock
+        data = {
+          clients: [],
+          processes: [],
+          movements: [],
+          imports: []
+        };
+        
+        // Se tiver token, tenta carregar dados reais
+        if (token) {
+          const clientId = token.split("-")[2];
+          // Busca cliente no localStorage ou Firebase
+          const saved = localStorage.getItem("marcaflow-client-" + clientId);
+          if (saved) {
+            const parsed = JSON.parse(saved);
+            if (parsed.client) currentClient = parsed.client;
+            if (parsed.processes) clientProcesses = parsed.processes;
+          }
+        }
+      } catch (error) {
+        console.error("Erro ao carregar dados:", error);
+        document.getElementById("content").innerHTML = '<div class="empty-state">Erro ao carregar dados. Tente novamente.</div>';
+      }
+    }
+
+    // Renderiza dashboard
+    function renderDashboard() {
+      if (!currentClient) {
+        document.getElementById("content").innerHTML = '<div class="empty-state">Cliente não encontrado. Token inválido ou expirado.</div>';
+        return;
+      }
+
+      const riskToneMap = { overdue: "red", today: "red", critical: "red", warning: "amber", ok: "green" };
+      
+      let html = `
+        <div class="card">
+          <h2>📋 ${escapeHtml(currentClient.name)}</h2>
+          <div class="info-grid">
+            <div class="info-item"><strong>CPF/CNPJ:</strong> ${escapeHtml(currentClient.document || "Não informado")}</div>
+            <div class="info-item"><strong>E-mail:</strong> ${escapeHtml(currentClient.email || "Não informado")}</div>
+            <div class="info-item"><strong>Processos:</strong> ${clientProcesses.length}</div>
+            <div class="info-item"><strong>Perfil:</strong> ${escapeHtml(currentClient.profile || "Empresa")}</div>
+          </div>
+        </div>
+      `;
+
+      if (clientProcesses.length) {
+        html += `
+          <div class="card">
+            <h3>📑 Processos</h3>
+            ${clientProcesses.map(process => {
+              const classes = process.classes ? process.classes.split(",").map(c => c.trim()).filter(Boolean) : [];
+              return `
+                <div class="process-card">
+                  <div class="process-header">
+                    <div>
+                      <h4>${escapeHtml(process.brand)}</h4>
+                      <p>Processo: ${escapeHtml(process.number || "Pré-depósito")} · Classes: ${classes.join(", ")}</p>
+                    </div>
+                    <span class="badge ${statusTone(process.status)}">${escapeHtml(process.status)}</span>
+                  </div>
+                  <div class="process-details">
+                    <div>Etapa: ${escapeHtml(process.flowStage)}</div>
+                    <div>Próxima ação: ${escapeHtml(process.nextAction)}</div>
+                    ${process.internalDeadline ? `<div>Prazo interno: ${formatDate(process.internalDeadline)} (${processRisk(process) === "overdue" ? "VENCIDO" : processRisk(process) === "today" ? "HOJE" : daysUntil(process.internalDeadline) + "d"})</div>` : ""}
+                    ${process.legalDeadline ? `<div>Prazo legal: ${formatDate(process.legalDeadline)} (${legalRisk(process) === "overdue" ? "VENCIDO" : legalRisk(process) === "today" ? "HOJE" : daysUntil(process.legalDeadline) + "d"})</div>` : ""}
+                  </div>
+                </div>
+              `;
+            }).join("")}
+          </div>
+        `;
+      } else {
+        html += '<div class="card empty-state">Nenhum processo encontrado para este cliente.</div>';
+      }
+
+      document.getElementById("content").innerHTML = html;
+      document.getElementById("update-time").textContent = "Última atualização: " + new Date().toLocaleDateString("pt-BR") + " às " + new Date().toLocaleTimeString("pt-BR");
+    }
+
+    // Inicialização
+    async function init() {
+      const params = new URLSearchParams(window.location.search);
+      token = params.get("token");
+      
+      if (!token) {
+        document.getElementById("content").innerHTML = '<div class="empty-state">Token não encontrado. Link de acesso inválido.</div>';
+        return;
+      }
+
+      await loadWorkspace();
+      renderDashboard();
+    }
+
+    init();
+  </script>
+</body>
+</html>

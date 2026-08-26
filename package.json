@@ -1,0 +1,30 @@
+{
+  "name": "marcaflow",
+  "version": "2.0.0",
+  "description": "Ferramenta completa para gestão de marcas no INPI",
+  "main": "public/main.js",
+  "scripts": {
+    "test": "node tests/run.js",
+    "test:watch": "node tests/run.js --watch",
+    "test:ci": "node tests/run.js --ci",
+    "lint": "eslint public/**/*.js",
+    "build": "echo 'Build complete'",
+    "dev": "npx serve public -l 3000",
+    "deploy": "node scripts/deploy.js",
+    "deploy:cloudflare": "wrangler pages deploy public/",
+    "deploy:firebase": "firebase deploy",
+    "backup": "node scripts/backup.js"
+  },
+  "keywords": [
+    "marca",
+    "inpi",
+    "propriedade-intelectual",
+    "gestao",
+    "automacao"
+  ],
+  "author": "MarcaFlow Team",
+  "license": "MIT",
+  "devDependencies": {
+    "eslint": "^8.50.0"
+  }
+}

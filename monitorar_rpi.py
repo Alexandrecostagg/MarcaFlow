@@ -174,7 +174,9 @@ def notify(report: dict, report_path: Path) -> None:
     count = len(report["movements"])
     title = f"MarcaFlow: RPI {report['rpi']}"
     message = f"{count} despacho(s) encontrado(s). Relatorio: {report_path.name}"
-    script = f'display notification {json.dumps(message)} with title {json.dumps(title)}'
+    safe_title = str(title).replace("'", "'\\''").replace('"', '\\"')
+    safe_message = str(message).replace("'", "'\\''").replace('"', '\\"')
+    script = f'display notification "{safe_message}" with title "{safe_title}"'
     subprocess.run(["osascript", "-e", script], check=False)
 
 

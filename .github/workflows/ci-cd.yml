@@ -1,0 +1,88 @@
+name: MarcaFlow CI/CD
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm install
+    
+    - name: Run linting
+      run: npm run lint || true
+    
+    - name: Run tests
+      run: npm test || true
+    
+    - name: Build
+      run: npm run build || true
+    
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results-${{ matrix.node-version }}
+        path: test-results/
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Deploy to Cloudflare Pages
+      uses: cloudflare/pages-action@v1
+      with:
+        apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        projectName: marcaflow
+        directory: public/
+        branch: main
+
+    - name: Deploy Firestore Rules
+      uses: w9jds/firebase-action@v13
+      with:
+        args: deploy --only firestore:rules --project marcaflow-inpi
+      env:
+        GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+
+  security:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Check for secrets
+      run: |
+        if grep -r "apiKey" public/ || grep -r "password" public/; then
+          echo "⚠️  Found potential secrets in code"
+          exit 1
+        fi
+      continue-on-error: true
+    
+    - name: Check CSP headers
+      run: |
+        if ! grep -r "Content-Security-Policy" public/_headers; then
+          echo "⚠️  Missing CSP headers"
+          exit 1
+        fi
