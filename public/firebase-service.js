@@ -1,3 +1,32 @@
+import { firebasePasskeyClient, mountPasskeys } from './security/firebase-client.mjs';
+import { EmailAuthProvider as ProvedorSenha, GoogleAuthProvider as ProvedorGoogle, reauthenticateWithCredential, reauthenticateWithPopup, signInWithCustomToken } from 'https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js';
+
+let desmontarChaves;
+function mostrarChaves(usuario) {
+  desmontarChaves?.();
+  document.querySelector('[data-painel-chaves]')?.remove();
+  const destino = document.querySelector(usuario ? 'main' : '#login-modal');
+  if (!destino) return;
+  const painel = document.createElement('div');
+  painel.dataset.painelChaves = '';
+  destino.append(painel);
+  const cliente = firebasePasskeyClient({
+    endpoint: 'https://marcaflow-inpi-passkeys.alexandrecostagg.workers.dev/auth/passkeys',
+    currentUser: () => auth.currentUser,
+    async reauthenticate(senha) {
+      if (!usuario || usuario.uid !== auth.currentUser?.uid) throw new Error('Entre para continuar.');
+      if (senha && usuario.email && usuario.providerData.some(p => p.providerId === 'password')) {
+        await reauthenticateWithCredential(usuario, ProvedorSenha.credential(usuario.email, senha));
+      } else if (usuario.providerData.some(p => p.providerId === 'google.com')) {
+        await reauthenticateWithPopup(usuario, new ProvedorGoogle());
+      } else {
+        throw new Error('Confirme a senha da conta.');
+      }
+    },
+    completeLogin: token => signInWithCustomToken(auth, token),
+  });
+  desmontarChaves = mountPasskeys(painel, cliente, { signedIn: Boolean(usuario) });
+}
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
 import {
   getAuth,
@@ -149,6 +178,7 @@ window.marcaFlowCloud = {
 };
 
 onAuthStateChanged(auth, user => {
+  mostrarChaves(user);
   window.dispatchEvent(new CustomEvent("marcaflow:auth", { detail: { user } }));
 });
 
