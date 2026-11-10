@@ -1,0 +1,15 @@
+name = "marcaflow-inpi-passkeys"
+main = "src/index.js"
+compatibility_date = "2026-11-10"
+
+[vars]
+FIREBASE_PROJECT_ID = "marcaflow-inpi"
+PASSKEY_ENABLED = "false"
+
+[[durable_objects.bindings]]
+name = "PASSKEY_STATE"
+class_name = "PasskeyState"
+
+[[migrations]]
+tag = "passkeys-v1"
+new_sqlite_classes = ["PasskeyState"]

@@ -1,4 +1,4 @@
-const CACHE_NAME = "marcaflow-v5";
+const CACHE_NAME = "marcaflow-v6";
 const V = "2026.08.29";
 const STATIC_ASSETS = [
   "./",

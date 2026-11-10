@@ -10,3 +10,6 @@
 [/api/agent]
   Cache-Control: no-store
   X-Content-Type-Options: nosniff
+
+/*
+  Content-Security-Policy-Report-Only: default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self'; script-src-attr 'none'; style-src 'self'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; media-src 'self' blob:; frame-src 'self'; worker-src 'self' blob:; form-action 'self'
